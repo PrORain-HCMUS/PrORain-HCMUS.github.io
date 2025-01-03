@@ -172,28 +172,59 @@
                     </div>
 
                     <style>
-                        .bio, .i-love {
-                            padding: 10px;
-                            border-radius: 5px;
-                        }
-                        
-                        /* Light theme */
-                        .bio, .i-love {
-                            background-color: #f8f9fa;
-                            color: #333;
-                        }
-                        
-                        /* Dark theme */
-                        .dark-theme .bio,
-                        .dark-theme .i-love {
-                            background-color: #343a40;
-                            color: #fff;
-                        }
-                        
-                        .list-group-item {
-                            border-radius: 4px;
-                        }
-                        </style>
+                    /* Base styles */
+                    .bio, .i-love {
+                        padding: 15px;
+                        border-radius: 8px;
+                        margin: 10px 0;
+                    }
+                    
+                    /* Light theme */
+                    :root {
+                        --bg-color: #f8f9fa;
+                        --text-color: #333;
+                    }
+                    
+                    .bio, .i-love {
+                        background-color: var(--bg-color);
+                        color: var(--text-color);
+                    }
+                    
+                    .bio .list-group-item,
+                    .i-love .list-group-item {
+                        background-color: var(--bg-color);
+                        color: var(--text-color);
+                    }
+                    
+                    /* Dark theme */
+                    .dark-theme {
+                        --bg-color: #2d3338;
+                        --text-color: #e9ecef;
+                    }
+                    
+                    .dark-theme .bio,
+                    .dark-theme .i-love {
+                        background-color: var(--bg-color);
+                        color: var(--text-color);
+                    }
+                    
+                    .dark-theme .bio .list-group-item,
+                    .dark-theme .i-love .list-group-item {
+                        background-color: var(--bg-color);
+                        color: var(--text-color);
+                        border-color: #454d55;
+                    }
+                    
+                    /* Add some contrast to the list items */
+                    .list-group-item {
+                        margin-bottom: 5px;
+                        border: 1px solid #dee2e6;
+                    }
+                    
+                    .dark-theme .list-group-item strong {
+                        color: #fff;
+                    }
+                    </style>
 
                 </div>
                 <h2><a href="/news/" style="color: inherit">news</a></h2>
