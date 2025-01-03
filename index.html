@@ -146,8 +146,7 @@
                             <strong>2019-2022:</strong> Studied at Bao Loc High School for the Gifted.
                         </li>
                         <li class="list-group-item">
-                            <strong>2022 - Present:</strong> Studying Artificial Intelligence at <br>
-                            <span class="font-italic">Ho Chi Minh City's University of Science.</span>
+                            <strong>2022 - Present:</strong> Studying Artificial Intelligence at <a href="https://en.hcmus.edu.vn/" rel="external nofollow noopener" target="_blank">Ho Chi Minh City's University of Science</a>.
                         </li>
                         <li class="list-group-item">
                             <strong>Current:</strong> Open to work and internships in AI Engineering roles.
@@ -172,38 +171,42 @@
                     </div>
 
                     <style>
-                    /* Base styles */
+                    /* Common styles for bio and interests sections */
                     .bio, .i-love {
                         padding: 0;
                         margin: 20px 0;
                     }
                     
-                    /* Light theme */
+                    /* Light theme styles */
                     :root {
-                        --text-color: #333;
-                        --text-secondary: #666;
+                        --text-primary: #333;
+                        --text-secondary: #555;
+                        --bg-content: #f8f9fa;
                         --heading-color: #2563eb;
+                    }
+                    
+                    .bio .list-group,
+                    .i-love .list-group {
+                        background-color: var(--bg-content);
+                        padding: 15px 20px;
+                        border-radius: 8px;
                     }
                     
                     .bio .list-group-item,
                     .i-love .list-group-item {
                         background: transparent;
-                        color: var(--text-color);
+                        color: var(--text-primary);
                         border: none;
                         padding: 8px 0;
                         margin-bottom: 5px;
                     }
                     
-                    /* Dark theme */
+                    /* Dark theme styles */
                     .dark-theme {
-                        --text-color: #e9ecef;
+                        --text-primary: #e9ecef;
                         --text-secondary: #adb5bd;
+                        --bg-content: #222529;
                         --heading-color: #60a5fa;
-                    }
-                    
-                    .dark-theme .bio .list-group-item,
-                    .dark-theme .i-love .list-group-item {
-                        color: var(--text-color);
                     }
                     
                     /* Headings */
@@ -215,14 +218,14 @@
                         font-weight: 600;
                     }
                     
-                    /* Bio items */
+                    /* Bio specific styles */
                     .bio .list-group-item strong {
                         display: inline-block;
                         min-width: 120px;
                         color: var(--text-secondary);
                     }
                     
-                    /* Interest items */
+                    /* Interests specific styles */
                     .i-love .list-group-item {
                         display: flex;
                         align-items: center;
@@ -233,11 +236,6 @@
                         color: var(--heading-color);
                         width: 20px;
                         text-align: center;
-                    }
-                    
-                    /* Remove unwanted margins and paddings */
-                    .list-group {
-                        margin-bottom: 0;
                     }
                     </style>
 
