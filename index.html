@@ -172,72 +172,51 @@
                     </div>
 
                     <style>
-                    /* Common styles for bio and interests sections */
-                    .bio, .i-love {
-                        padding: 0;
-                        margin: 20px 0;
-                    }
-                    
-                    /* Light theme styles */
-                    :root {
-                        --text-primary: #333;
-                        --text-secondary: #555;
-                        --bg-content: #f8f9fa;
-                        --heading-color: #2563eb;
-                    }
-                    
-                    .bio .list-group,
-                    .i-love .list-group {
-                        background-color: var(--bg-content);
-                        padding: 15px 20px;
-                        border-radius: 8px;
-                    }
-                    
-                    .bio .list-group-item,
-                    .i-love .list-group-item {
-                        background: transparent;
-                        color: var(--text-primary);
-                        border: none;
-                        padding: 8px 0;
-                        margin-bottom: 5px;
-                    }
-                    
-                    /* Dark theme styles */
-                    .dark-theme {
-                        --text-primary: #e9ecef;
-                        --text-secondary: #adb5bd;
-                        --bg-content: #222529;
-                        --heading-color: #60a5fa;
-                    }
-                    
-                    /* Headings */
-                    h3.text-primary,
-                    h3.text-success {
-                        color: var(--heading-color) !important;
-                        font-size: 1.5rem;
-                        margin-bottom: 1rem;
-                        font-weight: 600;
-                    }
-                    
-                    /* Bio specific styles */
-                    .bio .list-group-item strong {
-                        display: inline-block;
-                        min-width: 120px;
-                        color: var(--text-secondary);
-                    }
-                    
-                    /* Interests specific styles */
-                    .i-love .list-group-item {
-                        display: flex;
-                        align-items: center;
-                        gap: 10px;
-                    }
-                    
-                    .i-love .list-group-item i {
-                        color: var(--heading-color);
-                        width: 20px;
-                        text-align: center;
-                    }
+                    /* Xóa nền trắng */  
+                    .bio, .i-love {  
+                        padding: 0;  
+                        margin: 20px 0;  
+                        background-color: transparent; /* Xóa màu nền */  
+                    }  
+
+                    /* Đảm bảo văn bản thay đổi khi chuyển chế độ */  
+                    .bio .list-group-item,  
+                    .i-love .list-group-item {  
+                        color: var(--text-primary); /* Đảm bảo màu văn bản thay đổi cùng chế độ */  
+                        border: none; /* Không viền */  
+                        padding: 8px 0;  
+                        margin-bottom: 5px;  
+                    }  
+
+                    /* Đối với trọng lượng của tiêu đề */  
+                    h3.text-primary,  
+                    h3.text-success {  
+                        color: var(--heading-color) !important; /* Đảm bảo tiêu đề thay đổi màu sắc */  
+                    }  
+
+                    /* Các kiểu khác theo yêu cầu */  
+                    .list-group {  
+                        padding: 15px 20px;  
+                        border-radius: 8px;  
+                    }  
+
+                    .bio .list-group-item strong {  
+                        display: inline-block;  
+                        min-width: 120px;  
+                        color: var(--text-secondary);  
+                    }  
+
+                    .i-love .list-group-item {  
+                        display: flex;  
+                        align-items: center;  
+                        gap: 10px;  
+                    }  
+
+                    .i-love .list-group-item i {  
+                        color: var(--heading-color);  
+                        width: 20px;  
+                        text-align: center;  
+                    }  
                     </style>
 
                 </div>
