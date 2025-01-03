@@ -173,16 +173,27 @@
 
                     <style>
                         .bio, .i-love {
-                            background-color: #f8f9fa;
-                            color: #333;
                             padding: 10px;
                             border-radius: 5px;
                         }
-                        .dark-theme .bio, .dark-theme .i-love {
+                        
+                        /* Light theme */
+                        .bio, .i-love {
+                            background-color: #f8f9fa;
+                            color: #333;
+                        }
+                        
+                        /* Dark theme */
+                        .dark-theme .bio,
+                        .dark-theme .i-love {
                             background-color: #343a40;
                             color: #fff;
                         }
-                    </style>
+                        
+                        .list-group-item {
+                            border-radius: 4px;
+                        }
+                        </style>
 
                 </div>
                 <h2><a href="/news/" style="color: inherit">news</a></h2>
