@@ -172,40 +172,35 @@
                     </div>
 
                     <style>
-                    /* Xóa nền trắng */  
+                    /* Xóa nền và viền trắng */  
                     .bio, .i-love {  
                         padding: 0;  
                         margin: 20px 0;  
-                        background-color: transparent; /* Xóa màu nền */  
                     }  
 
                     /* Đảm bảo văn bản thay đổi khi chuyển chế độ */  
                     .bio .list-group-item,  
                     .i-love .list-group-item {  
-                        color: var(--text-primary); /* Đảm bảo màu văn bản thay đổi cùng chế độ */  
+                        color: var(--text-primary); /* Màu văn bản thay đổi cùng chế độ */  
                         border: none; /* Không viền */  
                         padding: 8px 0;  
                         margin-bottom: 5px;  
                     }  
 
-                    /* Đối với trọng lượng của tiêu đề */  
+                    /* Đối với đầu đề */  
                     h3.text-primary,  
                     h3.text-success {  
-                        color: var(--heading-color) !important; /* Đảm bảo tiêu đề thay đổi màu sắc */  
+                        color: var(--heading-color) !important; /* Màu sắc cho tiêu đề */  
                     }  
 
-                    /* Các kiểu khác theo yêu cầu */  
-                    .list-group {  
-                        padding: 15px 20px;  
-                        border-radius: 8px;  
-                    }  
-
+                    /* Tiêu đề dạng danh sách */  
                     .bio .list-group-item strong {  
                         display: inline-block;  
                         min-width: 120px;  
-                        color: var(--text-secondary);  
+                        color: var(--text-secondary); /* Màu cho tiêu đề con trong danh sách */  
                     }  
 
+                    /* Các kiểu hiển thị cho sở thích */  
                     .i-love .list-group-item {  
                         display: flex;  
                         align-items: center;  
@@ -216,7 +211,7 @@
                         color: var(--heading-color);  
                         width: 20px;  
                         text-align: center;  
-                    }  
+                    }
                     </style>
 
                 </div>
