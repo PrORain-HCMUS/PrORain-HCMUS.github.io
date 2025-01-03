@@ -172,25 +172,23 @@
                     </div>
 
                     <style>
-                    /* Common styles for bio and interests sections */
                     .bio, .i-love {
                         padding: 0;
                         margin: 20px 0;
-                    }
-                    
-                    /* Light theme styles */
-                    :root {
-                        --text-primary: #333;
-                        --text-secondary: #555;
-                        --bg-content: #f8f9fa;
-                        --heading-color: #2563eb;
+                        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
                     }
                     
                     .bio .list-group,
                     .i-love .list-group {
                         background-color: var(--bg-content);
-                        padding: 15px 20px;
-                        border-radius: 8px;
+                        padding: 20px 25px;
+                        border-radius: 12px;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .bio .list-group:hover,
+                    .i-love .list-group:hover {
+                        transform: translateY(-2px);
                     }
                     
                     .bio .list-group-item,
@@ -198,45 +196,63 @@
                         background: transparent;
                         color: var(--text-primary);
                         border: none;
-                        padding: 8px 0;
-                        margin-bottom: 5px;
+                        padding: 12px 0;
+                        margin-bottom: 8px;
+                        border-bottom: 1px solid rgba(0,0,0,0.05);
                     }
                     
-                    /* Dark theme styles */
-                    .dark-theme {
-                        --text-primary: #e9ecef;
-                        --text-secondary: #adb5bd;
-                        --bg-content: #222529;
-                        --heading-color: #60a5fa;
+                    .bio .list-group-item:last-child,
+                    .i-love .list-group-item:last-child {
+                        border-bottom: none;
                     }
                     
-                    /* Headings */
-                    h3.text-primary,
-                    h3.text-success {
-                        color: var(--heading-color) !important;
-                        font-size: 1.5rem;
-                        margin-bottom: 1rem;
-                        font-weight: 600;
-                    }
-                    
-                    /* Bio specific styles */
                     .bio .list-group-item strong {
                         display: inline-block;
                         min-width: 120px;
-                        color: var(--text-secondary);
+                        color: #2563eb;
+                        font-weight: 600;
                     }
                     
-                    /* Interests specific styles */
                     .i-love .list-group-item {
                         display: flex;
                         align-items: center;
-                        gap: 10px;
+                        gap: 15px;
+                        transition: all 0.2s ease;
+                    }
+                    
+                    .i-love .list-group-item:hover {
+                        padding-left: 10px;
                     }
                     
                     .i-love .list-group-item i {
-                        color: var(--heading-color);
-                        width: 20px;
-                        text-align: center;
+                        color: #2563eb;
+                        width: 24px;
+                        height: 24px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background: rgba(37, 99, 235, 0.1);
+                        border-radius: 6px;
+                    }
+                    
+                    :root {
+                        --text-primary: #333;
+                        --text-secondary: #555;
+                        --bg-content: #ffffff;
+                    }
+                    
+                    .dark-theme {
+                        --text-primary: #e9ecef;
+                        --text-secondary: #adb5bd;
+                        --bg-content: #1e2124;
+                    }
+                    
+                    h3.text-primary,
+                    h3.text-success {
+                        font-size: 1.75rem;
+                        margin-bottom: 1.5rem;
+                        font-weight: 700;
+                        letter-spacing: -0.5px;
                     }
                     </style>
 
