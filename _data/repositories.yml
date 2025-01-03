@@ -1,14 +1,13 @@
 github_users:
-  - torvalds
-  - alshedivat
+  - PrORain-HCMUS
 
-repo_description_lines_max: 2
+repo_description_lines_max: 3
 
 github_repos:
-  - alshedivat/al-folio
-  - jekyll/jekyll
-  - twbs/bootstrap
-  - jquery/jquery
-  - FortAwesome/Font-Awesome
-  - mathjax/MathJax
-  - jpswalsh/academicons
+{% if site.data.repositories.github_repos %}
+  <div class="repositories d-flex flex-wrap flex-md-row flex-column justify-content-between align-items-center">
+    {% for repo in site.data.repositories.github_repos %}
+      {% include repository/repo.liquid repository=repo %}
+    {% endfor %}
+  </div>
+{% endif %}
