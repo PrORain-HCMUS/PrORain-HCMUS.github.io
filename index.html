@@ -20,6 +20,22 @@
     <link rel="canonical" href="https://prorain-hcmus.github.io/">
     <script src="/assets/js/theme.js?9a0c749ec5240d9cda97bc72359a72c0"></script>
     <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark">
+    <style>
+        body {
+            color: #333;
+        }
+        .dark-theme body {
+            color: #fff;
+        }
+        .bio, .i-love {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .dark-theme .bio, .dark-theme .i-love {
+            background-color: #343a40;
+        }
+    </style>
     <script>
         initTheme();
     </script>
@@ -119,7 +135,7 @@
                     <p>Put your address / P.O. box / other info right below your picture. You can also disable any of these elements by editing <code class="language-plaintext highlighter-rouge">profile</code> property of the YAML header of your <code class="language-plaintext highlighter-rouge">_pages/about.md</code>. Edit <code class="language-plaintext highlighter-rouge">_bibliography/papers.bib</code> and Jekyll will render your <a href="/al-folio/publications/">publications page</a> automatically.</p>
                     <p>Link to your social media connections, too. This theme is set up to use <a href="https://fontawesome.com/" rel="external nofollow noopener" target="_blank">Font Awesome icons</a> and <a href="https://jpswalsh.github.io/academicons/" rel="external nofollow noopener" target="_blank">Academicons</a>, like the ones below. Add your Facebook, Twitter, LinkedIn, Google Scholar, or just disable all of them.</p>
                     <h3 class="text-primary"><i class="fas fa-user-graduate"></i> Bio</h3>
-                    <ul class="list-group">
+                    <ul class="list-group bio">
                         <li class="list-group-item">
                             <strong>2004:</strong> Born in Bao Loc City, Lam Dong Province.
                         </li>
@@ -138,7 +154,7 @@
                         </li>
                     </ul>
                     <h3 class="text-success mt-4"><i class="fas fa-heart"></i> I ♥</h3>
-                    <div class="row">
+                    <div class="row i-love">
                         <div class="col-md-6">
                             <ul class="list-group">
                                 <li class="list-group-item"><i class="fas fa-palette"></i> Art</li>
@@ -154,6 +170,19 @@
                             </ul>
                         </div>
                     </div>
+
+                    <style>
+                        .bio, .i-love {
+                            background-color: #f8f9fa;
+                            color: #333;
+                            padding: 10px;
+                            border-radius: 5px;
+                        }
+                        .dark-theme .bio, .dark-theme .i-love {
+                            background-color: #343a40;
+                            color: #fff;
+                        }
+                    </style>
 
                 </div>
                 <h2><a href="/news/" style="color: inherit">news</a></h2>
