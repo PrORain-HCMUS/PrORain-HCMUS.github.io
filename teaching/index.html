@@ -29,6 +29,49 @@
   <script>
     initTheme();
   </script>
+
+  <style>
+    /* Animation styles for course cards */
+    .card.hoverable {
+        transition: all 0.3s ease;
+        transform: translateY(0);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .card.hoverable:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .card figure {
+        overflow: hidden;
+        margin: 0;
+    }
+
+    .card figure img {
+        transition: transform 0.5s ease;
+    }
+
+    .card:hover figure img {
+        transform: scale(1.05);
+    }
+
+    .card-body {
+        transition: background-color 0.3s ease;
+    }
+
+    .card:hover .card-body {
+        background-color: #f8f9fa;
+    }
+
+    .badge {
+        transition: transform 0.3s ease;
+    }
+
+    .card:hover .badge {
+        transform: translateX(5px);
+    }
+  </style>
 </head>
 
 <body class="fixed-top-nav ">
@@ -90,7 +133,7 @@
                     <img src="/assets/img/teaching/advanced_ml.jpg" class="card-img-top" width="100%" height="auto" alt="course thumbnail">
                   </figure>
                   <div class="card-body">
-                    <h2 class="card-title">Advanced Machine Learning</h2>
+                    <h2 class="card-title">Machine Learning Specialization</h2>
                     <p class="card-text">Deep learning, reinforcement learning, and more</p>
                     <div class="row ml-1 mr-1 p-0">
                       <span class="badge bg-info">Spring 2024</span>
