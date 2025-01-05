@@ -31,6 +31,48 @@
   </script>
 </head>
 
+<style>
+  /* Thêm vào file CSS của bạn */
+
+.card.hoverable {
+    transition: all 0.3s ease-in-out;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.card.hoverable:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    border-color: #007bff;
+}
+
+/* Hiệu ứng cho hình ảnh */
+.card.hoverable figure img {
+    transition: all 0.3s ease-in-out;
+}
+
+.card.hoverable:hover figure img {
+    transform: scale(1.05);
+}
+
+/* Hiệu ứng cho tiêu đề */
+.card.hoverable .card-title {
+    transition: color 0.3s ease;
+}
+
+.card.hoverable:hover .card-title {
+    color: #007bff;
+}
+
+/* Hiệu ứng cho badge */
+.card.hoverable .badge {
+    transition: all 0.3s ease;
+}
+
+.card.hoverable:hover .badge {
+    transform: scale(1.1);
+}
+</style>
+
 <body class="fixed-top-nav ">
   <header>
     <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation">
@@ -91,7 +133,7 @@
                   </figure>
                   <div class="card-body">
                     <h2 class="card-title">Machine Learning</h2>
-                    <p class="card-text">Deep learning, reinforcement learning, and more</p>
+                    <p class="card-text">Deep learning, Reinforcement learning, and more</p>
                     <div class="row ml-1 mr-1 p-0">
                       <span class="badge bg-info">Spring 2024</span>
                     </div>
@@ -109,7 +151,7 @@
                   </figure>
                   <div class="card-body">
                     <h2 class="card-title">Computer Vision Specialization</h2>
-                    <p class="card-text">Image processing, object detection, and visual understanding</p>
+                    <p class="card-text">Image processing, Object detection, and Visual understanding</p>
                     <div class="row ml-1 mr-1 p-0">
                       <span class="badge bg-info">Fall 2024</span>
                     </div>
