@@ -347,7 +347,9 @@ footer a { color: var(--ink); }
   .guide .gr { grid-template-columns: 1fr; }
   .guide .gr > div:last-child { border-left: 0; border-top: 1px dashed var(--rule); }
   .card { padding: 18px; }
-  .scene { aspect-ratio: 3 / 2; }
+  .scene { aspect-ratio: auto; display: flex; flex-direction: column; }
+  .scene canvas, .scene .scene-fallback { position: relative; inset: auto; height: auto; aspect-ratio: 16 / 8; flex: none; }
+  .scene figcaption { position: static; background: none; padding: 4px 14px 12px; }
   .tools { grid-template-columns: 1fr; }
   .badge-float.a { left: -6px; }
 }
