@@ -94,7 +94,7 @@
       </div>
       <div class="portrait">
         <div class="frame"><picture><source srcset="assets/img/avatar.webp" type="image/webp"><img src="assets/img/avatar.jpg" width="480" height="480" alt="Portrait of Hoang-Vu Le" fetchpriority="high"></picture></div>
-        <div class="badge-float b"><b>4 plants</b>live at Bosch</div>
+        <div class="badge-float b"><b>AI Engineer</b>@ Bosch</div>
         <div class="badge-float a"><b>RecSys ’26</b>Main track · Oral</div>
       </div>
     </div>
@@ -143,47 +143,62 @@
 <section id="experience" data-st="Experience" data-n="02" data-cap="Enterprise GenAI that real operators use every shift." data-cmd="bosch --status" data-out="MMA: live, 4 plants|CDR Bot: 1,000+ users|PM Assistant: 100k+ items">
   <div class="wrap">
     <div class="sec-head reveal"><div><div class="eyebrow">Experience</div><h2>Where I work</h2><p>Enterprise GenAI that real operators use every shift.</p></div></div>
-    <div class="timeline">
-      <article class="card tl-item reveal">
-        <div class="tl-top"><h3>AI Engineer</h3><span class="when">Nov 2025 — Present</span></div>
-        <div class="org">Bosch Global Software Technologies Vietnam · Ho Chi Minh City · On-site</div>
-
-        <div class="sys">
-          <h4>Mobility Manufacturing Agent (MMA) <span class="chip good">Live · 4 plants</span></h4>
-          <p class="desc">Enterprise GenAI assistant that helps plant operators troubleshoot, document and reuse solutions. <em>FastAPI, ChatXDC, LangGraph, LangChain, Azure OpenAI, Qdrant, Cosmos DB, Docker, Azure App Service.</em></p>
-          <ul>
-            <li>RAG troubleshooting assistant with an expert-assist mode over past issues and technical docs, cutting troubleshooting time by <span class="num">~35%</span>.</li>
-            <li>Guided documentation assistant that turns conversations into structured issue reports for shift-log and ticketing systems, reducing manual effort by <span class="num">~80%</span>.</li>
-            <li>Multi-plant setup with per-site data isolation and voice-to-text capture.</li>
-          </ul>
-          <div class="impact"><span class="chip accent">&gt;90% user adoption</span><span class="chip accent">RB Digital Award 2025 — Efficiency</span><span class="chip accent">Handelsblatt Best of Technology 2026 — 3rd, Process Management</span></div>
-        </div>
-
-        <div class="sys">
-          <h4>Competence Development Roadmap Chatbot (CDR Bot)</h4>
-          <p class="desc">Chatbot that recommends personalised learning paths and courses. <em>FastAPI, LangChain, LangGraph, MongoDB, Redis, Azure OpenAI, Weviate.</em></p>
-          <ul>
-            <li>Multi-agent LangGraph system for learning-path planning, course search and analytics, serving <span class="num">1,000+</span> employees.</li>
-            <li>Secure FastAPI backend (Azure AD, rate limiting) with vector search at <span class="num">~90%</span> retrieval accuracy; admin dashboard for usage and engagement.</li>
-          </ul>
-          <div class="impact"><span class="chip accent">−60% course-discovery time</span><span class="chip accent">+25% course enrolment</span></div>
-        </div>
-
-        <div class="sys">
-          <h4>PM Assistant</h4>
-          <p class="desc">Multi-agent project-management assistant across Jira and Azure DevOps. <em>LangGraph, FastAPI, ChromaDB, Azure OpenAI, MLflow.</em></p>
-          <ul>
-            <li>Five LangGraph agents for reading, writing, analysis, search and chat across the platforms.</li>
-            <li>Hybrid search (database queries + vector search + keyword ranking) over <span class="num">100k+</span> work items at <span class="num">~92%</span> success, plus automated summaries and performance monitoring.</li>
-          </ul>
-          <div class="impact"><span class="chip accent">−40% issue-triage time</span></div>
+    <div class="xp">
+      <article class="xp-role reveal">
+        <div class="xp-dot" aria-hidden="true"></div>
+        <header class="xp-head">
+          <div class="xp-logo" aria-hidden="true">BGSV</div>
+          <div class="xp-title"><h3>AI Engineer</h3><div class="org">Bosch Global Software Technologies Vietnam · Ho Chi Minh City · On-site</div></div>
+          <span class="when">Nov 2025 — Present</span>
+        </header>
+        <div class="xp-systems">
+        <article class="xp-card feat reveal" style="--accent:var(--signal)">
+          <div class="xp-no" aria-hidden="true">01</div>
+          <header><h4>Mobility Manufacturing Agent <small>MMA</small></h4><span class="live-pill"><i></i>Live · 4 plants</span></header>
+          <p class="desc">Enterprise GenAI assistant that helps plant operators troubleshoot, document and reuse solutions across sites.</p>
+          <div class="xp-stats"><div class="xp-stat"><b>~35%</b><span>faster troubleshooting</span></div><div class="xp-stat"><b>~80%</b><span>less manual reporting</span></div><div class="xp-stat"><b>>90%</b><span>user adoption</span></div><div class="xp-stat"><b>4</b><span>plants live</span></div></div>
+          <details class="how" open><summary>How it works</summary><ul>
+            <li>RAG troubleshooting assistant with an expert-assist mode over past issues and technical docs.</li>
+            <li>Guided documentation assistant that turns conversations into structured issue reports for shift-log and ticketing systems.</li>
+            <li>Multi-plant setup with per-site data isolation and voice-to-text capture.</li></ul></details>
+          <div class="xp-awards"><span class="ribbon"><i aria-hidden="true">★</i>RB Digital Award 2025 — Efficiency</span><span class="ribbon"><i aria-hidden="true">★</i>Handelsblatt Best of Technology 2026 — 3rd, Process Management</span></div>
+          <ul class="tech"><li data-t="fastapi">FastAPI</li><li data-t="chatxdc">ChatXDC</li><li data-t="langgraph">LangGraph</li><li data-t="langchain">LangChain</li><li data-t="azure openai">Azure OpenAI</li><li data-t="qdrant">Qdrant</li><li data-t="cosmos db">Cosmos DB</li><li data-t="docker">Docker</li><li data-t="azure app service">Azure App Service</li></ul>
+        </article>
+        <article class="xp-card reveal" style="--accent:var(--teal)">
+          <div class="xp-no" aria-hidden="true">02</div>
+          <header><h4>Competence Development Roadmap Chatbot <small>CDR Bot</small></h4></header>
+          <p class="desc">Chatbot that recommends personalised learning paths and courses.</p>
+          <div class="xp-stats"><div class="xp-stat"><b>1,000+</b><span>employees served</span></div><div class="xp-stat"><b>−60%</b><span>course-discovery time</span></div><div class="xp-stat"><b>+25%</b><span>course enrolment</span></div><div class="xp-stat"><b>~90%</b><span>retrieval accuracy</span></div></div>
+          <details class="how"><summary>How it works</summary><ul>
+            <li>Multi-agent LangGraph system for learning-path planning, course search and analytics.</li>
+            <li>Secure FastAPI backend (Azure AD, rate limiting) with vector search; admin dashboard for usage and engagement.</li></ul></details>
+          <ul class="tech"><li data-t="fastapi">FastAPI</li><li data-t="langchain">LangChain</li><li data-t="langgraph">LangGraph</li><li data-t="mongodb">MongoDB</li><li data-t="redis">Redis</li><li data-t="azure openai">Azure OpenAI</li><li data-t="weaviate">Weaviate</li></ul>
+        </article>
+        <article class="xp-card reveal" style="--accent:var(--amber)">
+          <div class="xp-no" aria-hidden="true">03</div>
+          <header><h4>PM Assistant</h4></header>
+          <p class="desc">Multi-agent project-management assistant across Jira and Azure DevOps.</p>
+          <div class="xp-stats"><div class="xp-stat"><b>5</b><span>LangGraph agents</span></div><div class="xp-stat"><b>100k+</b><span>work items searched</span></div><div class="xp-stat"><b>~92%</b><span>search success</span></div><div class="xp-stat"><b>−40%</b><span>issue-triage time</span></div></div>
+          <details class="how"><summary>How it works</summary><ul>
+            <li>Five agents for reading, writing, analysis, search and chat across the platforms.</li>
+            <li>Hybrid search (database queries, vector search and keyword ranking), plus automated summaries and performance monitoring.</li></ul></details>
+          <ul class="tech"><li data-t="langgraph">LangGraph</li><li data-t="fastapi">FastAPI</li><li data-t="chromadb">ChromaDB</li><li data-t="azure openai">Azure OpenAI</li><li data-t="mlflow">MLflow</li></ul>
+        </article>
         </div>
       </article>
 
-      <article class="card tl-item reveal">
-        <div class="tl-top"><h3>B.Sc. Artificial Intelligence</h3><span class="when">Sep 2022 — Present</span></div>
-        <div class="org">University of Science, VNU-HCMC</div>
-        <p style="color:var(--ink-soft);margin:0">Competed in the HCMC AI Challenge 2024, Zalo AI Challenge 2025 and the Act In Space hackathon. Before that: Bao Loc High School for the Gifted (Mathematics, 2019–2022) with the top scholarship all three years and a place on the provincial Olympiad team in 2021 and 2022.</p>
+      <article class="xp-role reveal edu">
+        <div class="xp-dot" aria-hidden="true"></div>
+        <header class="xp-head">
+          <div class="xp-logo" aria-hidden="true">VNU</div>
+          <div class="xp-title"><h3>B.Sc. Artificial Intelligence</h3><div class="org">University of Science, VNU-HCMC</div></div>
+          <span class="when">Sep 2022 — Present</span>
+        </header>
+        <p class="desc">Competitions along the way, and the maths foundation underneath.</p>
+        <ul class="tech big">
+          <li>HCMC AI Challenge 2024</li><li>Zalo AI Challenge 2025</li><li>Act In Space hackathon</li>
+          <li>Bao Loc High School for the Gifted · Mathematics 2019–22</li><li>Top scholarship, all three years</li><li>Provincial Olympiad team 2021, 2022</li>
+        </ul>
       </article>
     </div>
   </div>
@@ -301,26 +316,8 @@
   </div>
 </section>
 
-<!-- ============ PROGRAM GUIDE ============ -->
-<section id="guide" data-st="Guide" data-n="07" data-cap="Every project here started as a problem someone actually had." data-cmd="cat guide.tsv" data-out="problem -> answer|8 rows">
-  <div class="wrap">
-    <div class="sec-head reveal"><div><div class="eyebrow">Program guide</div><h2>Problems, and what answered them</h2></div></div>
-    <div class="guide reveal">
-      <div class="gh"><span>Problem</span><span>Answer</span></div>
-      <div class="gr"><div><b>Recommenders degrade on long histories</b></div><div>CONGA: norm-preserving RoPE, doubly-stochastic multi-stream fusion, neural long-term memory</div></div>
-      <div class="gr"><div><b>Parallel residual streams drift apart</b></div><div>Doubly-stochastic mixing for balanced gradient flow (RET 2026)</div></div>
-      <div class="gr"><div><b>Plant operators lose time troubleshooting</b></div><div>MMA: RAG assistant, ~35% faster troubleshooting, live in 4 plants</div></div>
-      <div class="gr"><div><b>Employees can't find the right course</b></div><div>CDR Bot: multi-agent learning paths, ~60% faster discovery</div></div>
-      <div class="gr"><div><b>Issue triage across Jira and DevOps</b></div><div>PM Assistant: five agents, hybrid search over 100k+ items</div></div>
-      <div class="gr"><div><b>Which earlier legal case entails this one?</b></div><div>ClaUSurf: retrieve, then reason (Recall@5 = 93%)</div></div>
-      <div class="gr"><div><b>Navigating the street without sight</b></div><div>VisionWalk: real-time voice guidance on a phone</div></div>
-      <div class="gr"><div><b>Training a conv-autoencoder takes hours</b></div><div>Hand-written CUDA kernels, ~505× over the CPU baseline</div></div>
-    </div>
-  </div>
-</section>
-
 <!-- ============ CONTACT ============ -->
-<section id="contact" data-st="Contact" data-n="08" data-cap="Say hello. I like recommender systems, agents and clean proofs." data-cmd="mail hv" data-out="llhoangvum10@gmail.com">
+<section id="contact" data-st="Contact" data-n="07" data-cap="Say hello. I like recommender systems, agents and clean proofs." data-cmd="mail hv" data-out="llhoangvum10@gmail.com">
   <div class="wrap">
     <div class="card contact reveal">
       <div class="eyebrow">Contact</div>

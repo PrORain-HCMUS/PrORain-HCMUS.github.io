@@ -172,6 +172,14 @@
     o.observe(el);
   });
 
+  /* experience: hovering a tech tag lights the same tag on every card */
+  var techs = document.querySelectorAll(".xp .tech li[data-t]");
+  Array.prototype.forEach.call(techs, function (li) {
+    var on = function (v) { Array.prototype.forEach.call(techs, function (o) { if (o.getAttribute("data-t") === li.getAttribute("data-t")) o.classList.toggle("hl", v); }); };
+    li.addEventListener("mouseenter", function () { on(true); });
+    li.addEventListener("mouseleave", function () { on(false); });
+  });
+
   var y = document.getElementById("year");
   if (y) y.textContent = new Date().getFullYear();
 })();
