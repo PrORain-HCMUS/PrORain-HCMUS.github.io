@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Speculative decoding: the acceptance rate is 1 − TV, so train for TV, not KL — Hoang-Vu Le</title>
+  <meta name="description" content="Speculative decoding is lossless, and its acceptance rate is exactly 1 − TV(p, q). Why that makes KL the wrong objective for training the draft model.">
+  <meta name="theme-color" content="#fafaf9">
+  <link rel="canonical" href="https://prorain-hcmus.github.io/blog/speculative-decoding/">
+  <meta property="og:type" content="article"><meta property="og:title" content="Speculative decoding: the acceptance rate is 1 − TV, so train for TV, not KL — Hoang-Vu Le"><meta property="og:description" content="Speculative decoding is lossless, and its acceptance rate is exactly 1 − TV(p, q). Why that makes KL the wrong objective for training the draft model."><meta property="og:image" content="https://prorain-hcmus.github.io/assets/img/og-avatar.jpg">
+  <link rel="alternate" type="application/rss+xml" title="Hoang-Vu Le — Notes" href="/feed.xml">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%234f46e5'/%3E%3Ctext x='16' y='21.5' font-family='monospace' font-weight='700' font-size='14' text-anchor='middle' fill='white'%3Ehv%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap">
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Speculative decoding: the acceptance rate is 1 \u2212 TV, so train for TV, not KL", "description": "Speculative decoding is lossless, and its acceptance rate is exactly 1 \u2212 TV(p, q). Why that makes KL the wrong objective for training the draft model.", "datePublished": "2026-11-01", "author": {"@type": "Person", "name": "Hoang-Vu Le", "url": "https://prorain-hcmus.github.io/"}, "mainEntityOfPage": "https://prorain-hcmus.github.io/blog/speculative-decoding/"}</script>
+  <script>try{var t=localStorage.getItem("hvl-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="progress" aria-hidden="true"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></symbol>
+</svg>
+<header class="nav"><div class="wrap nav-in">
+  <a class="brand" href="/" aria-label="Hoang-Vu Le — home"><span class="mark">hv</span><span>Hoang-Vu Le</span></a>
+  <nav class="links" id="nav-links" aria-label="Primary">
+    <a href="/#about">About</a><a href="/#experience">Experience</a><a href="/#research">Research</a><a href="/#projects">Projects</a><a href="/#awards">Awards</a><a href="/blog/" class="active">Writing</a><a href="/#contact">Contact</a>
+  </nav>
+  <div class="nav-tools">
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle dark mode" type="button"><svg class="i-sun"><use href="#i-sun"/></svg><svg class="i-moon"><use href="#i-moon"/></svg></button>
+    <button class="icon-btn menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-links"><svg><use href="#i-menu"/></svg></button>
+  </div>
+</div></header>
+<main id="main"><article class="article">
+  <div class="crumbs"><a href="/blog/">Writing</a> / LLMs</div>
+  <h1>Speculative decoding: the acceptance rate is 1 − TV, so train for TV, not KL</h1>
+  <p class="dek">A small model drafts, a big model checks, and the output is provably unchanged. Why the speed-up is a total-variation quantity, and what that implies for how drafters should be trained.</p>
+  <div class="byline"><img src="/assets/img/avatar.jpg" width="38" height="38" alt=""><div><b style="color:var(--ink)">Hoang-Vu Le</b> · Nov 1, 2026 · 8 min read</div></div>
+  <div class="prose"><p>How can a small, sloppy model make a big, careful model faster — <em>without changing a single token the big model would have said</em>? That sounds like a free lunch, so I wanted to see exactly where the catch is. These are notes while studying speculative decoding; none of the core results are mine (see the reading list at the end), but the last section, on training objectives, is the part I found most useful.</p>
+
+<h2>The procedure in one paragraph</h2>
+<p>Autoregressive decoding is slow because every token needs a full forward pass of the big <em>target</em> model with distribution \(p\). Speculative decoding adds a cheap <em>draft</em> model with distribution \(q\). The draft proposes a token \(x \sim q\). The target, which can score many positions in one pass, accepts it with probability \(\min\!\big(1, p(x)/q(x)\big)\). If it rejects, we sample a replacement from the <em>residual</em> distribution</p>
+<div class="math">\[ r(x) \;=\; \frac{\max\big(p(x) - q(x),\,0\big)}{\sum_{y}\max\big(p(y) - q(y),\,0\big)} . \]</div>
+<pre><code>def step(p, q, rng):
+    x = rng.choice(len(q), p=q)                 # draft proposes
+    if rng.random() &lt; min(1.0, p[x] / q[x]):    # target verifies
+        return x
+    r = np.maximum(p - q, 0); r /= r.sum()      # residual
+    return rng.choice(len(r), p=r)</code></pre>
+
+<h2>Why the output is exactly \(p\)</h2>
+<p>Take a four-token vocabulary with \(p = (0.50, 0.30, 0.15, 0.05)\) and \(q = (0.40, 0.40, 0.10, 0.10)\). The probability that token \(x\) is emitted is "proposed and accepted" plus "rejected and resampled":</p>
+<div class="math">\[ \Pr[x] \;=\; \underbrace{q(x)\min\!\big(1,\tfrac{p(x)}{q(x)}\big)}_{=\,\min(p(x),\,q(x))} \;+\; (1-\alpha)\, r(x), \qquad \alpha=\sum_y \min(p(y),q(y)). \]</div>
+<p>Here \(\min(p,q) = (0.40, 0.30, 0.10, 0.05)\), so \(\alpha = 0.85\). The leftover mass \(1-\alpha = 0.15\) times the residual \(r = (2/3,\,0,\,1/3,\,0)\) is \((0.10, 0, 0.05, 0)\). Add them up and you get \((0.50, 0.30, 0.15, 0.05) = p\). In general \((1-\alpha)\,r(x) = \max(p(x)-q(x),0)\), and \(\min(p,q) + \max(p-q,0) = p\) — that one line is the whole lossless proof. (I also checked it by simulating 400,000 draws: the empirical frequencies match \(p\) to within about \(10^{-3}\).)</p>
+
+<h2>The acceptance rate is overlap, which is \(1-\mathrm{TV}\)</h2>
+<p>The same number \(\alpha\) is the chance that a proposed token survives, and it is the <em>overlap</em> of the two distributions. Since \(\min(a,b) = \tfrac12\big(a+b-|a-b|\big)\),</p>
+<div class="math">\[ \alpha(p,q) \;=\; \sum_x \min\big(p(x),q(x)\big) \;=\; 1 - \tfrac12\sum_x |p(x)-q(x)| \;=\; 1-\mathrm{TV}(p,q). \]</div>
+<p>In the example, \(\mathrm{TV} = \tfrac12(0.10+0.10+0.05+0.05) = 0.15\), so \(\alpha = 0.85\). Not KL, not cross-entropy — total variation, exactly.</p>
+
+<h2>From one token to a block</h2>
+<p>In practice the draft proposes \(\gamma\) tokens and the target verifies them all in one pass. Verification stops at the first rejection. If all \(\gamma\) are accepted, the target has already computed the distribution at position \(\gamma+1\), so it emits one free <em>bonus</em> token. If each position is accepted independently with probability \(\alpha\), the expected number of tokens per round is</p>
+<div class="math">\[ \mathbb{E}[\tau] \;=\; \sum_{i=0}^{\gamma}\alpha^{i} \;=\; \frac{1-\alpha^{\gamma+1}}{1-\alpha}. \]</div>
+<p>With \(\alpha=0.85\) and \(\gamma=4\): \(\mathbb{E}[\tau] = (1-0.85^5)/0.15 \approx 3.71\) tokens per round. And no matter how long the block, the ceiling is \(1/(1-\alpha) = 1/\mathrm{TV}\), which is \(6.7\) tokens here. A drafter with \(\mathrm{TV}=0.15\) can never deliver more than about 6.7 tokens per target pass.</p>
+
+<h2>Picking the draft length</h2>
+<p>Drafting isn't free. Say a round costs one target pass (\(c_t = 1\)) plus \(c_d\) per drafted token, with \(c_d/c_t = 0.12\) — a number I picked for illustration. Throughput, in tokens per unit of target time, is</p>
+<div class="math">\[ T(\gamma) \;=\; \frac{\mathbb{E}[\tau]}{c_t + c_d\,\gamma}. \]</div>
+<p>For \(\alpha=0.85,\ \gamma=4\) that is \(3.71/1.48 \approx 2.5\times\) plain decoding. Because \(\mathbb{E}[\tau]\) saturates while draft cost keeps growing linearly, there is an optimal \(\gamma^{*}\), and it moves a lot with \(\alpha\):</p>
+<figure>
+<svg viewBox="0 0 640 380" role="img" aria-label="Throughput versus draft length for three acceptance rates; the optimum draft length is 3, 4 and 9" style="width:100%;height:auto">
+<line x1="58" x2="616" y1="324.0" y2="324.0" style="stroke:var(--line)" stroke-width="1"/>
+<text x="48" y="328.0" text-anchor="end" font-size="12" style="fill:var(--ink-mute);font-family:var(--font)">0×</text>
+<line x1="58" x2="616" y1="237.7" y2="237.7" style="stroke:var(--line)" stroke-width="1"/>
+<text x="48" y="241.7" text-anchor="end" font-size="12" style="fill:var(--ink-mute);font-family:var(--font)">1×</text>
+<line x1="58" x2="616" y1="151.4" y2="151.4" style="stroke:var(--line)" stroke-width="1"/>
+<text x="48" y="155.4" text-anchor="end" font-size="12" style="fill:var(--ink-mute);font-family:var(--font)">2×</text>
+<line x1="58" x2="616" y1="65.1" y2="65.1" style="stroke:var(--line)" stroke-width="1"/>
+<text x="48" y="69.1" text-anchor="end" font-size="12" style="fill:var(--ink-mute);font-family:var(--font)">3×</text>
+<text x="58.0" y="344" text-anchor="middle" font-size="12" style="fill:var(--ink-mute);font-family:var(--font)">1</text>
+<text x="175.5" y="344" text-anchor="middle" font-size="12" style="fill:var(--ink-mute);font-family:var(--font)">5</text>
+<text x="322.3" y="344" text-anchor="middle" font-size="12" style="fill:var(--ink-mute);font-family:var(--font)">10</text>
+<text x="469.2" y="344" text-anchor="middle" font-size="12" style="fill:var(--ink-mute);font-family:var(--font)">15</text>
+<text x="616.0" y="344" text-anchor="middle" font-size="12" style="fill:var(--ink-mute);font-family:var(--font)">20</text>
+<text x="337" y="368" text-anchor="middle" font-size="13" style="fill:var(--ink-soft);font-family:var(--font)">draft length γ (tokens proposed per round)</text>
+<text transform="translate(16 173) rotate(-90)" text-anchor="middle" font-size="13" style="fill:var(--ink-soft);font-family:var(--font)">tokens per unit of target-model time</text>
+<line x1="58" x2="616" y1="237.7" y2="237.7" style="stroke:var(--ink-mute)" stroke-dasharray="4 4" stroke-width="1.2"/>
+<text x="612" y="231.7" text-anchor="end" font-size="11.5" style="fill:var(--ink-mute);font-family:var(--font)">plain decoding = 1×</text>
+<path d="M58.0 200.7 L87.4 187.6 L116.7 185.9 L146.1 189.6 L175.5 195.5 L204.8 202.1 L234.2 208.7 L263.6 215.1 L292.9 220.9 L322.3 226.3 L351.7 231.2 L381.1 235.7 L410.4 239.8 L439.8 243.5 L469.2 247.0 L498.5 250.1 L527.9 253.0 L557.3 255.7 L586.6 258.2 L616.0 260.6" fill="none" style="stroke:var(--accent-2)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="116.7" cy="185.9" r="5.5" style="fill:var(--bg-elev);stroke:var(--accent-2)" stroke-width="2.6"/>
+<text x="116.7" y="173.9" text-anchor="middle" font-size="12.5" font-weight="600" style="fill:var(--accent-2);font-family:var(--font)">α=0.6: γ*=3, 1.60×</text>
+<path d="M58.0 189.2 L87.4 163.1 L116.7 150.5 L146.1 146.1 L175.5 146.7 L204.8 150.1 L234.2 155.2 L263.6 161.1 L292.9 167.4 L322.3 173.7 L351.7 179.9 L381.1 185.9 L410.4 191.6 L439.8 196.9 L469.2 202.0 L498.5 206.7 L527.9 211.1 L557.3 215.2 L586.6 219.1 L616.0 222.7" fill="none" style="stroke:var(--accent)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="146.1" cy="146.1" r="5.5" style="fill:var(--bg-elev);stroke:var(--accent)" stroke-width="2.6"/>
+<text x="146.1" y="134.1" text-anchor="middle" font-size="12.5" font-weight="600" style="fill:var(--accent);font-family:var(--font)">α=0.75: γ*=4, 2.06×</text>
+<path d="M58.0 177.6 L87.4 135.4 L116.7 105.8 L146.1 85.3 L175.5 71.3 L204.8 62.3 L234.2 56.9 L263.6 54.3 L292.9 53.8 L322.3 54.9 L351.7 57.1 L381.1 60.3 L410.4 64.1 L439.8 68.3 L469.2 72.9 L498.5 77.8 L527.9 82.8 L557.3 87.8 L586.6 92.9 L616.0 98.0" fill="none" style="stroke:var(--good)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="292.9" cy="53.8" r="5.5" style="fill:var(--bg-elev);stroke:var(--good)" stroke-width="2.6"/>
+<text x="292.9" y="41.8" text-anchor="middle" font-size="12.5" font-weight="600" style="fill:var(--good);font-family:var(--font)">α=0.9: γ*=9, 3.13×</text>
+</svg>
+<figcaption>Toy model: throughput \(T(\gamma)\) with \(c_d/c_t = 0.12\), acceptance independent at each position. Optimal draft lengths are 3, 4 and 9 for α = 0.6, 0.75, 0.9. Real systems violate the i.i.d. assumption: acceptance usually decays with position, so the real curves peak earlier.</figcaption>
+</figure>
+<p>This is why serious systems adapt \(\gamma\) per workload: code and other structured text accept well (high \(\alpha\), long blocks pay off), while open-ended chat accepts poorly (short blocks).</p>
+
+<h2>So what should we train the drafter on?</h2>
+<p>The default is to distil the drafter with a KL loss, \(\mathrm{KL}(p\,\|\,q)\), because it is smooth and well understood. But the speed-up is governed by \(\mathrm{TV}\). How are the two related?</p>
+<p><strong>One direction holds.</strong> Pinsker's inequality gives \(\mathrm{TV}(p,q) \le \sqrt{\tfrac12\mathrm{KL}(p\|q)}\), so \(\alpha \ge 1-\sqrt{\mathrm{KL}/2}\). Drive KL to zero and acceptance goes to one.</p>
+<p><strong>The other direction fails.</strong> Let \(p = (1-\varepsilon,\ \varepsilon)\) and \(q = (1,\ 0)\). Then \(\mathrm{TV} = \varepsilon\) — tiny, so \(\alpha = 1-\varepsilon\) — while \(\mathrm{KL}(p\|q) = \infty\) because \(q\) gives zero mass to something \(p\) can say. A small KL is sufficient for good acceptance, but it is not necessary, and minimising it can spend capacity on exactly the wrong things.</p>
+<p>That gap matters when the drafter is <em>too small to represent \(p\)</em>, which is the normal case. Then "closest in KL" and "closest in TV" are different models, and only the second maximises acceptance. In a toy simulation from my own study notes (a vocabulary of 128 tokens, a drafter restricted to a rank-\(r\) family, fitted once by KL and once by TV), the picture was:</p>
+<ul>
+<li>tiny capacity (\(r=2\)): both fits are equally bad, about +1% throughput for TV;</li>
+<li>middle capacity (\(r=48\)): acceptance rises from 0.744 (KL) to 0.861 (TV); at \(\gamma=7\) that is \(\mathbb{E}[\tau]\) of 3.54 versus 5.02, about <strong>+42% throughput</strong>;</li>
+<li>full capacity (\(r=128\), the family can express \(p\) exactly): the two objectives share the same optimum and the gap vanishes.</li>
+</ul>
+<p>So the benefit of the right objective is a hump: zero at both extremes, largest in the realistic middle. The exponential amplification inside \(\mathbb{E}[\tau]\) is why a twelve-point gain in \(\alpha\) turns into forty-odd percent in speed.</p>
+
+<h3>Caveats</h3>
+<ul>
+<li>That experiment is a small synthetic one, not a production drafter, and I have not reproduced it on real language models.</li>
+<li>TV is non-differentiable where \(p(x)=q(x)\). A naive subgradient fit gets stuck and <em>under-reports</em> the TV solution; in my simulation I smoothed \(|z|\approx\sqrt{z^2+\epsilon}\) and annealed \(\epsilon\to 0\). Anyone using a TV-style loss for real needs a similar plan, or a mixed loss with a small KL term for stability.</li>
+<li>My notes also mention recent drafter-training work that moves away from pure KL; I haven't verified those papers, so I won't name them here.</li>
+<li>\(\mathbb{E}[\tau]\) above assumes independent acceptance per position. Real acceptance falls with position, which also argues for weighting early positions more in the training loss.</li>
+</ul>
+
+<div class="callout"><b>Takeaway.</b> Speculative decoding is lossless because \(\min(p,q)+\max(p-q,0)=p\). Its acceptance rate is exactly \(1-\mathrm{TV}(p,q)\), and its speed-up ceiling is \(1/\mathrm{TV}\). KL is a sufficient proxy only when the drafter can nearly match the target; when it cannot, the objective you train on matters, and it should be the one you are scored on.</div>
+
+<h2>Further reading</h2>
+<ul>
+<li>Leviathan, Kalman, Matias — <a href="https://arxiv.org/abs/2211.17192">Fast Inference from Transformers via Speculative Decoding</a> (arXiv 2211.17192).</li>
+<li>Chen et al. — <a href="https://arxiv.org/abs/2302.01318">Accelerating Large Language Model Decoding with Speculative Sampling</a> (arXiv 2302.01318).</li>
+<li><a href="https://en.wikipedia.org/wiki/Pinsker%27s_inequality">Pinsker's inequality</a>, for the KL–TV relationship used above.</li>
+</ul>
+</div>
+  <div class="next"><span></span><a href="/blog/best-of-n/" style="text-align:right"><small>Next →</small>Thinking longer, voting more: the maths of why test-time compute saturates</a></div>
+</article></main><footer><div class="wrap"><span>© <span id="year">2026</span> Hoang-Vu Le · Ho Chi Minh City, Viet Nam</span><span><a href="/feed.xml">RSS</a> · <a href="/">Home</a></span></div></footer>
+<script src="/assets/js/site.js" defer></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.querySelector('.prose'),{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})"></script>
+</body></html>

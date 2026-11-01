@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to read an LLM benchmark without fooling yourself — Hoang-Vu Le</title>
+  <meta name="description" content="A statistics primer for leaderboards: standard errors, the unbiased pass@k estimator, Elo as SGD on Bradley–Terry, position bias in LLM judges, and Goodhart.">
+  <meta name="theme-color" content="#fafaf9">
+  <link rel="canonical" href="https://prorain-hcmus.github.io/blog/read-benchmarks/">
+  <meta property="og:type" content="article"><meta property="og:title" content="How to read an LLM benchmark without fooling yourself — Hoang-Vu Le"><meta property="og:description" content="A statistics primer for leaderboards: standard errors, the unbiased pass@k estimator, Elo as SGD on Bradley–Terry, position bias in LLM judges, and Goodhart."><meta property="og:image" content="https://prorain-hcmus.github.io/assets/img/og-avatar.jpg">
+  <link rel="alternate" type="application/rss+xml" title="Hoang-Vu Le — Notes" href="/feed.xml">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%234f46e5'/%3E%3Ctext x='16' y='21.5' font-family='monospace' font-weight='700' font-size='14' text-anchor='middle' fill='white'%3Ehv%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap">
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "How to read an LLM benchmark without fooling yourself", "description": "A statistics primer for leaderboards: standard errors, the unbiased pass@k estimator, Elo as SGD on Bradley\u2013Terry, position bias in LLM judges, and Goodhart.", "datePublished": "2026-11-01", "author": {"@type": "Person", "name": "Hoang-Vu Le", "url": "https://prorain-hcmus.github.io/"}, "mainEntityOfPage": "https://prorain-hcmus.github.io/blog/read-benchmarks/"}</script>
+  <script>try{var t=localStorage.getItem("hvl-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="progress" aria-hidden="true"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></symbol>
+</svg>
+<header class="nav"><div class="wrap nav-in">
+  <a class="brand" href="/" aria-label="Hoang-Vu Le — home"><span class="mark">hv</span><span>Hoang-Vu Le</span></a>
+  <nav class="links" id="nav-links" aria-label="Primary">
+    <a href="/#about">About</a><a href="/#experience">Experience</a><a href="/#research">Research</a><a href="/#projects">Projects</a><a href="/#awards">Awards</a><a href="/blog/" class="active">Writing</a><a href="/#contact">Contact</a>
+  </nav>
+  <div class="nav-tools">
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle dark mode" type="button"><svg class="i-sun"><use href="#i-sun"/></svg><svg class="i-moon"><use href="#i-moon"/></svg></button>
+    <button class="icon-btn menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-links"><svg><use href="#i-menu"/></svg></button>
+  </div>
+</div></header>
+<main id="main"><article class="article">
+  <div class="crumbs"><a href="/blog/">Writing</a> / LLMs</div>
+  <h1>How to read an LLM benchmark without fooling yourself</h1>
+  <p class="dek">A two-point gap on a leaderboard can be noise, pass@64 near 100% says little about reliability, and Elo is one line of gradient descent.</p>
+  <div class="byline"><img src="/assets/img/avatar.jpg" width="38" height="38" alt=""><div><b style="color:var(--ink)">Hoang-Vu Le</b> · Nov 1, 2026 · 9 min read</div></div>
+  <div class="prose"><p>A new model scores 82.1 on a benchmark and last month's scored 80.4. Is it better? Before the number goes in a slide, I want to know whether 1.7 points is signal. These are my study notes on the five checks I now run on any evaluation result: sampling error, <code>pass@k</code>, Elo, judge bias and Goodhart.</p>
+
+<div class="callout"><b>Notes, not results.</b> All numbers below are computed by me from the formulas, not taken from any particular leaderboard.</div>
+
+<h2>1. A score is a sample mean, so it has an error bar</h2>
+<p>If a model answers each of \(N\) independent questions correctly with probability \(p\), the measured accuracy has standard error</p>
+<div class="math">\[
+\mathrm{SE} = \sqrt{\frac{p(1-p)}{N}} \;\le\; \frac{1}{2\sqrt N}.
+\]</div>
+<p>For an MMLU-sized test, \(N\approx 14{,}000\) and \(p\approx 0.8\): \(\mathrm{SE}=\sqrt{0.16/14000}\approx 0.34\) points, so a 95% interval is about \(\pm 0.66\). A 1.7-point gap on that benchmark is meaningful. On a 500-question benchmark with the same \(p\), \(\mathrm{SE}\approx 1.8\) points and the interval is \(\pm 3.5\). Comparing two models that were scored independently multiplies the SE by \(\sqrt2\), to about 2.5, so the gap must exceed roughly 5 points to clear the 95% bar. A 1.7-point gap there is indistinguishable from noise.</p>
+<p>Two refinements. Scoring both models on the <em>same</em> questions lets you use a paired test, which is much tighter because question difficulty cancels. And this error bar covers only <em>which questions were drawn</em>, not run-to-run sampling randomness, prompt phrasing or contamination, so it is a lower bound on honest uncertainty.</p>
+
+<h2>2. pass@k measures coverage, not reliability</h2>
+<p>For code and maths, people report <code>pass@k</code>: the chance that at least one of \(k\) samples is correct. The naive way is to generate exactly \(k\) samples and check, which has high variance. The standard fix (introduced with HumanEval in Chen et al.) is to generate \(n\ge k\) samples, count the \(c\) correct ones, and compute</p>
+<div class="math">\[
+\widehat{\text{pass@}k} = 1-\frac{\binom{n-c}{k}}{\binom{n}{k}} .
+\]</div>
+<p>It is unbiased because \(\binom{n-c}{k}/\binom{n}{k}\) is exactly the probability that a uniformly random \(k\)-subset of your \(n\) samples contains no correct one. Example: \(n=20\) samples, \(c=3\) correct, \(k=5\): \(1-\binom{17}{5}/\binom{20}{5} = 1-6188/15504 = 0.60\). In code, use the numerically stable product form:</p>
+<pre><code>def pass_at_k(n, c, k):
+    if n - c &lt; k:
+        return 1.0
+    # 1 - prod_{i=n-c+1}^{n} (1 - k/i)
+    p = 1.0
+    for i in range(n - c + 1, n + 1):
+        p *= 1.0 - k / i
+    return 1.0 - p</code></pre>
+<p>Now the interpretation trap. With independent samples and per-sample success \(p\), \(\text{pass@}k = 1-(1-p)^k\), which races to 1 as \(k\) grows. A model that solves a problem only 20% of the time has \(\text{pass@}1 = 20\%\) but \(\text{pass@}64 = 1-0.8^{64}\approx 0.9999994\). That is 99.99994%, not a number to be impressed by: it says a correct solution <em>exists somewhere in the distribution</em>, not that the model will give it to you.</p>
+<figure>
+<svg viewBox="0 0 640 330" role="img" aria-label="pass@k as a function of k for per-sample success p of 0.01, 0.05 and 0.2" style="width:100%;height:auto;font:12px var(--font)">
+<line x1="56" x2="616" y1="278.0" y2="278.0" style="stroke:var(--line)"/>
+<text x="48" y="282.0" text-anchor="end" style="fill:var(--ink-mute)">0.0</text>
+<line x1="56" x2="616" y1="225.6" y2="225.6" style="stroke:var(--line)"/>
+<text x="48" y="229.6" text-anchor="end" style="fill:var(--ink-mute)">0.2</text>
+<line x1="56" x2="616" y1="173.2" y2="173.2" style="stroke:var(--line)"/>
+<text x="48" y="177.2" text-anchor="end" style="fill:var(--ink-mute)">0.4</text>
+<line x1="56" x2="616" y1="120.8" y2="120.8" style="stroke:var(--line)"/>
+<text x="48" y="124.8" text-anchor="end" style="fill:var(--ink-mute)">0.6</text>
+<line x1="56" x2="616" y1="68.4" y2="68.4" style="stroke:var(--line)"/>
+<text x="48" y="72.4" text-anchor="end" style="fill:var(--ink-mute)">0.8</text>
+<line x1="56" x2="616" y1="16.0" y2="16.0" style="stroke:var(--line)"/>
+<text x="48" y="20.0" text-anchor="end" style="fill:var(--ink-mute)">1.0</text>
+<line x1="56.0" x2="56.0" y1="278" y2="283" style="stroke:var(--ink-mute)"/>
+<text x="56.0" y="298" text-anchor="middle" style="fill:var(--ink-mute)">1</text>
+<line x1="196.0" x2="196.0" y1="278" y2="283" style="stroke:var(--ink-mute)"/>
+<text x="196.0" y="298" text-anchor="middle" style="fill:var(--ink-mute)">4</text>
+<line x1="336.0" x2="336.0" y1="278" y2="283" style="stroke:var(--ink-mute)"/>
+<text x="336.0" y="298" text-anchor="middle" style="fill:var(--ink-mute)">16</text>
+<line x1="476.0" x2="476.0" y1="278" y2="283" style="stroke:var(--ink-mute)"/>
+<text x="476.0" y="298" text-anchor="middle" style="fill:var(--ink-mute)">64</text>
+<line x1="616.0" x2="616.0" y1="278" y2="283" style="stroke:var(--ink-mute)"/>
+<text x="616.0" y="298" text-anchor="middle" style="fill:var(--ink-mute)">256</text>
+<line x1="56" x2="56" y1="16" y2="278" style="stroke:var(--ink-mute)"/>
+<line x1="56" x2="616" y1="278" y2="278" style="stroke:var(--ink-mute)"/>
+<text x="336.0" y="322" text-anchor="middle" style="fill:var(--ink-soft)">k samples (log scale)</text>
+<text transform="translate(14 147.0) rotate(-90)" text-anchor="middle" style="fill:var(--ink-soft)">pass@k</text>
+<path d="M56.0 275.4 L73.5 274.9 L91.0 274.3 L108.5 273.6 L126.0 272.8 L143.5 271.8 L161.0 270.7 L178.5 269.3 L196.0 267.7 L213.5 265.8 L231.0 263.5 L248.5 260.9 L266.0 257.8 L283.5 254.1 L301.0 249.8 L318.5 244.9 L336.0 239.1 L353.5 232.4 L371.0 224.7 L388.5 215.9 L406.0 205.9 L423.5 194.7 L441.0 182.3 L458.5 168.5 L476.0 153.7 L493.5 137.9 L511.0 121.5 L528.5 104.8 L546.0 88.4 L563.5 72.7 L581.0 58.5 L598.5 46.1 L616.0 36.0" fill="none" style="stroke:var(--ink-soft)" stroke-width="2.5" stroke-linecap="round"/>
+<text x="610.0" y="54.0" text-anchor="end" style="fill:var(--ink-soft);font-weight:600">p = 0.01</text>
+<path d="M56.0 264.9 L73.5 262.5 L91.0 259.7 L108.5 256.3 L126.0 252.5 L143.5 247.9 L161.0 242.6 L178.5 236.5 L196.0 229.4 L213.5 221.3 L231.0 212.0 L248.5 201.5 L266.0 189.8 L283.5 176.8 L301.0 162.6 L318.5 147.4 L336.0 131.3 L353.5 114.7 L371.0 98.1 L388.5 81.9 L406.0 66.8 L423.5 53.2 L441.0 41.7 L458.5 32.6 L476.0 25.8 L493.5 21.3 L511.0 18.5 L528.5 17.0 L546.0 16.4 L563.5 16.1 L581.0 16.0 L598.5 16.0 L616.0 16.0" fill="none" style="stroke:var(--accent-2)" stroke-width="2.5" stroke-linecap="round"/>
+<text x="228.9" y="198.6" text-anchor="end" style="fill:var(--accent-2);font-weight:600">p = 0.05</text>
+<path d="M56.0 225.6 L73.5 216.9 L91.0 207.1 L108.5 196.0 L126.0 183.7 L143.5 170.1 L161.0 155.4 L178.5 139.7 L196.0 123.3 L213.5 106.6 L231.0 90.1 L248.5 74.4 L266.0 60.0 L283.5 47.4 L301.0 37.0 L318.5 29.0 L336.0 23.4 L353.5 19.8 L371.0 17.7 L388.5 16.6 L406.0 16.2 L423.5 16.1 L441.0 16.0 L458.5 16.0 L476.0 16.0 L493.5 16.0 L511.0 16.0 L528.5 16.0 L546.0 16.0 L563.5 16.0 L581.0 16.0 L598.5 16.0 L616.0 16.0" fill="none" style="stroke:var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+<text x="95.5" y="187.3" text-anchor="end" style="fill:var(--accent);font-weight:600">p = 0.2</text>
+<circle cx="476.0" cy="16.5" r="4.5" style="fill:var(--accent)"/>
+</svg>
+<figcaption>pass@k = 1 − (1 − p)^k for three per-sample success rates p. A problem the model solves one time in five is "solved" at k = 64 (dot), and the curve is already flat well before.</figcaption>
+</figure>
+<p>The informative quantity is the <em>gap</em> \(\text{pass@}k-\text{pass@}1\): that is the part of the benchmark where the model <em>could</em> succeed but usually doesn't, which is exactly what a verifier or RL training can try to convert into reliability. (In an earlier version of my own notes I had written 99.97% for this example. The arithmetic gives 1 − 6.3×10⁻⁷, so I fixed it.)</p>
+
+<h2>3. Elo is gradient descent on Bradley–Terry</h2>
+<p>Arena-style leaderboards turn pairwise human votes into ratings. The Bradley–Terry model says model \(i\) beats \(j\) with probability \(\sigma(\theta_i-\theta_j)\), and the Elo expected score is the same thing in disguise: with \(s = 400/\ln 10\),</p>
+<div class="math">\[
+E_i = \frac{1}{1+10^{(r_j-r_i)/400}} = \sigma\!\big((r_i-r_j)/s\big).
+\]</div>
+<p>For one match with outcome \(S_i\in\{0,1\}\), the negative log-likelihood has gradient \(\partial\mathcal L/\partial r_i = -\tfrac1s(S_i-E_i)\), so the familiar update</p>
+<div class="math">\[
+r_i \leftarrow r_i + K\,(S_i - E_i),\qquad r_j \leftarrow r_j - K\,(S_i - E_i)
+\]</div>
+<p>is one step of <em>stochastic gradient descent</em> with learning rate \(\eta = Ks\). Example: \(r_i=1000\) against \(r_j=1200\) gives \(E_i = 0.24\); if \(i\) wins with \(K=32\) it gains \(32\times0.76\approx 24\) points.</p>
+<p>Reading Elo as SGD explains its three well-known quirks. \(K\) is a learning rate (speed against noise). The result depends on <em>vote order</em>: take two models with a 2–2 record where A wins the first two matches and B the last two, and A ends at 994.7; reverse the order and A ends at 1005.3, an 11-point difference from nothing but ordering. And a single SGD run gives no error bars. That is why arenas moved to fitting Bradley–Terry by maximum likelihood on all votes at once (order-independent, with bootstrap confidence intervals).</p>
+
+<h2>4. LLM judges have a position bias</h2>
+<p>When a model grades two answers \(a,b\), it tends to favour one slot. Suppose it picks the first slot with probability \(q(a,b)=\pi(a,b)+\delta\), where \(\pi\) is the "true" preference and \(\delta\) is a bias that does not depend on content. Ask twice with the order swapped, and average:</p>
+<div class="math">\[
+\hat\pi(a\succ b)=\tfrac12\big[q(a,b) + 1 - q(b,a)\big] = \tfrac12\big[(\pi(a,b)+\delta) + 1 - (1-\pi(a,b)+\delta)\big] = \pi(a,b).
+\]</div>
+<p>The \(\delta\) terms cancel. Swapping costs two judge calls instead of one and removes the additive part of the bias. It does not remove verbosity bias, self-preference or style bias, which are not about position, so the swap is necessary, not sufficient.</p>
+
+<h2>5. The winner's curse (Goodhart, statistically)</h2>
+<p>Suppose 20 candidate models are all <em>exactly equally good</em>, but each measured score carries independent noise with standard deviation \(\sigma\) (the SE from section 1). The expected maximum of 20 standard normals is about 1.87 (I checked by simulation), so the top-ranked model is expected to look \(1.87\sigma\) better than it is. On the 14,000-question benchmark that is \(\approx 0.6\) points; on a 500-question one it is \(\approx 3.4\). Choose the best of many noisy scores and you select, in part, for luck. Add real optimisation pressure on the metric itself (training on it, tuning prompts to it) and it stops measuring what it used to measure. The habit that follows: report the interval, pre-register which metric you will pick, and keep a held-out set that nobody tunes against.</p>
+
+<div class="callout"><b>Takeaway.</b> Before believing a benchmark delta: compute \(\sqrt{p(1-p)/N}\), ask whether the models were compared on the same questions, know that \(\text{pass@}k\) at large \(k\) is coverage, remember that Elo is order-dependent SGD, swap the order for judges, and discount the winner of a crowded field.</div>
+
+<h2>Further reading</h2>
+<ul>
+<li>Chen et al., <a href="https://arxiv.org/abs/2107.03374">Evaluating Large Language Models Trained on Code</a> (arXiv 2107.03374), where the unbiased <code>pass@k</code> estimator is introduced.</li>
+<li>Eugene Yan, <a href="https://eugeneyan.com/writing/product-evals/">Product Evals in Three Simple Steps</a> — a practical loop for aligning LLM evaluators with human labels.</li>
+<li>Sebastian Raschka, <a href="https://magazine.sebastianraschka.com/p/state-of-llms-2025">The State Of LLMs 2025</a> — includes discussion of benchmark overfitting.</li>
+</ul>
+</div>
+  <div class="next"><a href="/blog/chinchilla/"><small>← Previous</small>Chinchilla in one derivation</a><a href="/blog/idempotency/" style="text-align:right"><small>Next →</small>Idempotency keys: making retries safe</a></div>
+</article></main><footer><div class="wrap"><span>© <span id="year">2026</span> Hoang-Vu Le · Ho Chi Minh City, Viet Nam</span><span><a href="/feed.xml">RSS</a> · <a href="/">Home</a></span></div></footer>
+<script src="/assets/js/site.js" defer></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.querySelector('.prose'),{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})"></script>
+</body></html>

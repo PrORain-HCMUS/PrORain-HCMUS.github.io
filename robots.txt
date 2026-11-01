@@ -1,1 +1,4 @@
-User-agent: * Disallow: Sitemap: https://PrORain-HCMUS.github.io/sitemap.xml
+User-agent: *
+Allow: /
+
+Sitemap: https://prorain-hcmus.github.io/sitemap.xml

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Idempotency keys: making retries safe — Hoang-Vu Le</title>
+  <meta name="description" content="Networks time out, clients retry, and side effects repeat. How an Idempotency-Key makes retries safe, with a tested FastAPI example and notes on Redis and Postgres.">
+  <meta name="theme-color" content="#fafaf9">
+  <link rel="canonical" href="https://prorain-hcmus.github.io/blog/idempotency/">
+  <meta property="og:type" content="article"><meta property="og:title" content="Idempotency keys: making retries safe — Hoang-Vu Le"><meta property="og:description" content="Networks time out, clients retry, and side effects repeat. How an Idempotency-Key makes retries safe, with a tested FastAPI example and notes on Redis and Postgres."><meta property="og:image" content="https://prorain-hcmus.github.io/assets/img/og-avatar.jpg">
+  <link rel="alternate" type="application/rss+xml" title="Hoang-Vu Le — Notes" href="/feed.xml">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%234f46e5'/%3E%3Ctext x='16' y='21.5' font-family='monospace' font-weight='700' font-size='14' text-anchor='middle' fill='white'%3Ehv%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap">
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Idempotency keys: making retries safe", "description": "Networks time out, clients retry, and side effects repeat. How an Idempotency-Key makes retries safe, with a tested FastAPI example and notes on Redis and Postgres.", "datePublished": "2026-11-01", "author": {"@type": "Person", "name": "Hoang-Vu Le", "url": "https://prorain-hcmus.github.io/"}, "mainEntityOfPage": "https://prorain-hcmus.github.io/blog/idempotency/"}</script>
+  <script>try{var t=localStorage.getItem("hvl-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="progress" aria-hidden="true"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></symbol>
+</svg>
+<header class="nav"><div class="wrap nav-in">
+  <a class="brand" href="/" aria-label="Hoang-Vu Le — home"><span class="mark">hv</span><span>Hoang-Vu Le</span></a>
+  <nav class="links" id="nav-links" aria-label="Primary">
+    <a href="/#about">About</a><a href="/#experience">Experience</a><a href="/#research">Research</a><a href="/#projects">Projects</a><a href="/#awards">Awards</a><a href="/blog/" class="active">Writing</a><a href="/#contact">Contact</a>
+  </nav>
+  <div class="nav-tools">
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle dark mode" type="button"><svg class="i-sun"><use href="#i-sun"/></svg><svg class="i-moon"><use href="#i-moon"/></svg></button>
+    <button class="icon-btn menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-links"><svg><use href="#i-menu"/></svg></button>
+  </div>
+</div></header>
+<main id="main"><article class="article">
+  <div class="crumbs"><a href="/blog/">Writing</a> / Engineering</div>
+  <h1>Idempotency keys: making retries safe</h1>
+  <p class="dek">The small header that stops a timeout from charging someone twice, with a FastAPI implementation you can run.</p>
+  <div class="byline"><img src="/assets/img/avatar.jpg" width="38" height="38" alt=""><div><b style="color:var(--ink)">Hoang-Vu Le</b> · Nov 1, 2026 · 8 min read</div></div>
+  <div class="prose"><p>A client sends <code>POST /payments</code> and the connection dies before the response arrives. Did the payment happen? The client cannot know, so it does the only sensible thing and retries. If the server treats the retry as a brand-new request, the customer is charged twice.</p>
+<p>The same shape shows up everywhere there is a retry loop: a mobile app on a flaky network, a message queue with at-least-once delivery, and, increasingly, an <strong>agent orchestrator</strong> that re-runs a failed step, which re-runs every tool call inside it. The fix is old and boring, which is why I like it. This is general backend knowledge rather than anything specific to one codebase.</p>
+
+<h2>The contract</h2>
+<p>An operation is <em>idempotent</em> if doing it twice has the same effect as doing it once. <code>PUT</code> and <code>DELETE</code> are idempotent by definition; <code>POST</code> is not. An <strong>idempotency key</strong> makes a POST behave as if it were:</p>
+<ol>
+  <li>The <strong>client</strong> generates a unique key per <em>logical operation</em> (a UUID, or something like <code>order-123-attempt</code>), and sends it in an <code>Idempotency-Key</code> header. The same key is reused on every retry of that operation, and never for a different one.</li>
+  <li>The <strong>server</strong> remembers the key together with the result. If the key shows up again, it returns the stored result instead of doing the work again.</li>
+</ol>
+<p>This is a widely copied convention. Stripe’s API accepts an <code>Idempotency-Key</code> header and replays the saved result for a repeated key, and there is an IETF draft that tries to standardise the header. I am only relying on that general shape here, so check the current docs for details such as key length and expiry.</p>
+
+<h2>Four cases the server must handle</h2>
+<ol>
+  <li><strong>Key never seen:</strong> Claim it, do the work, store the result, return it.</li>
+  <li><strong>Key seen, work finished, same body:</strong> Return the stored status and body again, marked as a replay.</li>
+  <li><strong>Key seen, work <em>still running</em>:</strong> <code>409 Conflict</code> with <code>Retry-After</code>. Do not start a second copy.</li>
+  <li><strong>Key seen, <em>different</em> body:</strong> <code>422</code>. The client has a bug; refusing loudly beats silently ignoring its new request.</li>
+</ol>
+<p>The third row is the one people forget. Two identical requests arriving at nearly the same time are the <em>common</em> retry pattern, not an edge case, so “check if the key exists, then insert it” is a race. Claiming the key has to be a single atomic step.</p>
+
+<h2>A FastAPI implementation</h2>
+<p>Here is a compact version with an in-memory store, so it runs anywhere. The store’s <code>claim</code> method is the atomic step; the endpoint is a thin state machine around it.</p>
+<pre><code>import hashlib, json, threading, time, uuid
+from fastapi import FastAPI, Header, HTTPException, Response
+from fastapi.encoders import jsonable_encoder
+from pydantic import BaseModel
+
+app = FastAPI()
+TTL_SECONDS = 24 * 3600
+
+class PaymentIn(BaseModel):
+    customer_id: str
+    amount: int          # minor units, e.g. cents
+    currency: str
+
+class IdempotencyStore:
+    """In-memory stand-in. In production: Redis (SET NX EX) or a unique index."""
+    def __init__(self):
+        self._rows, self._lock = {}, threading.Lock()
+
+    def claim(self, key, fingerprint):
+        now = time.time()
+        with self._lock:                       # atomic check-and-insert
+            row = self._rows.get(key)
+            if row and row["expires"] &gt; now:
+                if row["fingerprint"] != fingerprint:
+                    return "mismatch", row
+                return ("replay" if row["done"] else "in_flight"), row
+            row = {"fingerprint": fingerprint, "done": False,
+                   "status": None, "body": None, "expires": now + TTL_SECONDS}
+            self._rows[key] = row
+            return "new", row
+
+    def finish(self, key, status, body):
+        with self._lock:
+            self._rows[key].update(done=True, status=status, body=body)
+
+    def release(self, key):
+        with self._lock:
+            self._rows.pop(key, None)
+
+store = IdempotencyStore()
+
+def charge_card(p: PaymentIn) -> dict:          # stand-in for the payment provider
+    return {"id": f"pay_{uuid.uuid4().hex[:8]}", "amount": p.amount, "status": "succeeded"}
+
+@app.post("/payments", status_code=201)
+def create_payment(body: PaymentIn, response: Response,
+                   idempotency_key: str = Header(..., min_length=8, max_length=255)):
+    fingerprint = hashlib.sha256(
+        json.dumps(jsonable_encoder(body), sort_keys=True).encode()).hexdigest()
+    outcome, row = store.claim(idempotency_key, fingerprint)
+
+    if outcome == "mismatch":
+        raise HTTPException(422, "Idempotency-Key already used with a different body")
+    if outcome == "in_flight":
+        raise HTTPException(409, "Request with this key still in progress",
+                            headers={"Retry-After": "1"})
+    if outcome == "replay":
+        response.status_code = row["status"]
+        response.headers["Idempotent-Replayed"] = "true"
+        return row["body"]
+
+    try:                                       # outcome == "new": we own the key
+        result = charge_card(body)             # the side effect
+    except Exception:
+        store.release(idempotency_key)         # nothing committed: allow a retry
+        raise
+    store.finish(idempotency_key, 201, result)
+    return result</code></pre>
+<p>Three details worth pointing out. The <strong>fingerprint</strong> is a hash of the canonicalised body (sorted keys), which is what lets the server tell “same request again” from “same key, different request”. The header name is <code>Idempotency-Key</code>; FastAPI maps the parameter <code>idempotency_key</code> to it automatically. And the key should be <strong>scoped</strong>, per user or tenant, in a real system, otherwise one customer’s key can collide with another’s.</p>
+
+<h3>Does it actually work?</h3>
+<p>I ran it through an ASGI test client, with <code>charge_card</code> sleeping for 200 ms and appending to a list so I could count charges:</p>
+<ul>
+  <li>Same key and body sent twice in sequence: the second call returned the identical body with <code>Idempotent-Replayed: true</code>, and the list held <strong>one</strong> charge.</li>
+  <li>Same key, amount changed from 1000 to 999: <code>422</code>.</li>
+  <li>Five identical requests fired concurrently: exactly one <code>201</code> and four <code>409</code> with <code>Retry-After: 1</code>, and one charge in total.</li>
+</ul>
+<p>That is a single-process test. The lock only protects one process, which is precisely why the next section matters.</p>
+
+<h2>Moving it out of memory</h2>
+<p>With more than one server process, the atomic claim must live in shared storage. Two common options:</p>
+<ul>
+  <li><strong>Redis:</strong> <code>SET idem:{tenant}:{key} "{fingerprint}:in_flight" NX EX 86400</code>. <code>NX</code> makes the set succeed only if the key is absent, and <code>EX</code> gives you the TTL for free. On completion, overwrite the value with the result.</li>
+  <li><strong>Postgres:</strong> a table with a unique constraint, claimed by an insert that does nothing on conflict. If one row was inserted, you own the key; otherwise read the existing row.</li>
+</ul>
+<pre><code>CREATE TABLE idempotency_keys (
+  tenant_id     text        NOT NULL,
+  key           text        NOT NULL,
+  fingerprint   text        NOT NULL,
+  status        text        NOT NULL DEFAULT 'in_flight',
+  response_code int,
+  response_body jsonb,
+  expires_at    timestamptz NOT NULL,
+  PRIMARY KEY (tenant_id, key)
+);
+
+INSERT INTO idempotency_keys (tenant_id, key, fingerprint, expires_at)
+VALUES ($1, $2, $3, now() + interval '24 hours')
+ON CONFLICT DO NOTHING;   -- 1 row affected = you own it</code></pre>
+<p>If the payment row itself also lives in Postgres, write it and mark the idempotency record <code>done</code> in the <strong>same transaction</strong>. Then a crash can never leave one without the other.</p>
+
+<h2>The sharp edges</h2>
+<ul>
+  <li><strong>The crash window.</strong> If the process dies after <code>charge_card</code> but before <code>finish</code>, the key is stuck <code>in_flight</code> until it expires, and the retry gets 409s. For external side effects, pass a key derived from the client’s key to the downstream provider too, so the provider deduplicates as well. Idempotency has to hold at every hop, not just yours.</li>
+  <li><strong>Should failures be stored?</strong> I release the key on an exception so the client may retry. That is right for “nothing happened” errors. If a failure is <em>ambiguous</em> (a timeout after the provider may have acted), it is safer to keep the key claimed and reconcile later. Some APIs store the first result, errors included, so decide deliberately.</li>
+  <li><strong>TTL.</strong> A day is typical. It must outlast your clients’ longest retry window, and it bounds how much you store.</li>
+  <li><strong>Client-side discipline.</strong> A key per <em>attempt</em> instead of per operation defeats the whole scheme. Generate the key once, before the first try, and persist it.</li>
+</ul>
+
+<h2>Why I care about this for agents</h2>
+<p>An LLM agent calling tools is a retry-heavy system by nature: models time out, rate limits bite, orchestrators resume from a checkpoint. If a step that already created a ticket, sent an email or charged a card is replayed, the tool call runs again. Giving each side-effecting tool call a stable key (for example derived from the run id and step id) means a replay becomes a no-op instead of a duplicate. Read-only calls need no key; anything that writes does.</p>
+
+<div class="callout"><b>Takeaway.</b> An idempotency key turns “retry and hope” into “retry safely”. Claim the key atomically, store the result, fingerprint the body, return 409 for in-flight duplicates, and make the guarantee hold at every hop, not just at your edge.</div>
+</div>
+  <div class="next"><a href="/blog/read-benchmarks/"><small>← Previous</small>How to read an LLM benchmark without fooling yourself</a><span></span></div>
+</article></main><footer><div class="wrap"><span>© <span id="year">2026</span> Hoang-Vu Le · Ho Chi Minh City, Viet Nam</span><span><a href="/feed.xml">RSS</a> · <a href="/">Home</a></span></div></footer>
+<script src="/assets/js/site.js" defer></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.querySelector('.prose'),{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})"></script>
+</body></html>

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thinking longer, voting more: the maths of why test-time compute saturates — Hoang-Vu Le</title>
+  <meta name="description" content="Best-of-n costs log n − (n−1)/n nats of KL, voting saturates near 1/ρ effective samples, and thinking longer can lower accuracy. Three ceilings.">
+  <meta name="theme-color" content="#fafaf9">
+  <link rel="canonical" href="https://prorain-hcmus.github.io/blog/best-of-n/">
+  <meta property="og:type" content="article"><meta property="og:title" content="Thinking longer, voting more: the maths of why test-time compute saturates — Hoang-Vu Le"><meta property="og:description" content="Best-of-n costs log n − (n−1)/n nats of KL, voting saturates near 1/ρ effective samples, and thinking longer can lower accuracy. Three ceilings."><meta property="og:image" content="https://prorain-hcmus.github.io/assets/img/og-avatar.jpg">
+  <link rel="alternate" type="application/rss+xml" title="Hoang-Vu Le — Notes" href="/feed.xml">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%234f46e5'/%3E%3Ctext x='16' y='21.5' font-family='monospace' font-weight='700' font-size='14' text-anchor='middle' fill='white'%3Ehv%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap">
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Thinking longer, voting more: the maths of why test-time compute saturates", "description": "Best-of-n costs log n \u2212 (n\u22121)/n nats of KL, voting saturates near 1/\u03c1 effective samples, and thinking longer can lower accuracy. Three ceilings.", "datePublished": "2026-11-01", "author": {"@type": "Person", "name": "Hoang-Vu Le", "url": "https://prorain-hcmus.github.io/"}, "mainEntityOfPage": "https://prorain-hcmus.github.io/blog/best-of-n/"}</script>
+  <script>try{var t=localStorage.getItem("hvl-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="progress" aria-hidden="true"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></symbol>
+</svg>
+<header class="nav"><div class="wrap nav-in">
+  <a class="brand" href="/" aria-label="Hoang-Vu Le — home"><span class="mark">hv</span><span>Hoang-Vu Le</span></a>
+  <nav class="links" id="nav-links" aria-label="Primary">
+    <a href="/#about">About</a><a href="/#experience">Experience</a><a href="/#research">Research</a><a href="/#projects">Projects</a><a href="/#awards">Awards</a><a href="/blog/" class="active">Writing</a><a href="/#contact">Contact</a>
+  </nav>
+  <div class="nav-tools">
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle dark mode" type="button"><svg class="i-sun"><use href="#i-sun"/></svg><svg class="i-moon"><use href="#i-moon"/></svg></button>
+    <button class="icon-btn menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-links"><svg><use href="#i-menu"/></svg></button>
+  </div>
+</div></header>
+<main id="main"><article class="article">
+  <div class="crumbs"><a href="/blog/">Writing</a> / Reasoning</div>
+  <h1>Thinking longer, voting more: the maths of why test-time compute saturates</h1>
+  <p class="dek">Best-of-n, majority voting and long chains of thought all spend compute at answer time. Each one has a ceiling you can write down.</p>
+  <div class="byline"><img src="/assets/img/avatar.jpg" width="38" height="38" alt=""><div><b style="color:var(--ink)">Hoang-Vu Le</b> · Nov 1, 2026 · 9 min read</div></div>
+  <div class="prose"><style>
+.prose table.plain{border-collapse:collapse;margin:1.2em auto 1.6em;font:500 .95rem var(--font)}
+.prose table.plain th,.prose table.plain td{padding:8px 16px;border-bottom:1px solid var(--line);text-align:center}
+.prose table.plain th{color:var(--ink-mute);font:600 .78rem var(--mono);text-transform:uppercase;letter-spacing:.08em}
+</style>
+<p>If a model is right 60% of the time, can I just sample it more and get to 90%? Reasoning models made "spend more compute at inference" the default answer to everything. These are my notes while studying it, and what I took from them is that every flavour of test-time compute has a ceiling you can derive on a page. Here are three: best-of-<em>n</em>, voting, and simply thinking for longer.</p>
+
+<div class="callout"><b>Notes, not results.</b> Everything below is textbook-style algebra I re-derived and checked numerically while studying. The models are deliberately toy-sized; their value is in the shape of the answer, not the exact numbers.</div>
+
+<h2>1. Best-of-n pays a logarithmic KL bill</h2>
+<p>Draw <em>n</em> samples from a base policy \(\pi\), score each with a reward model, keep the best. The resulting policy \(\pi_n\) is not \(\pi\) any more, and the distance between them is exactly what you "spent" to get a higher reward. How much is it?</p>
+<p>Assume the reward \(r(y)\) has a continuous distribution under \(\pi\) (no ties). Let \(u = F(r(y))\in[0,1]\) be the reward's quantile. The best of \(n\) draws has the largest quantile, whose density is \(n u^{n-1}\), while under \(\pi\) the quantile is uniform. So the density ratio is \(\pi_n(y)/\pi(y) = n\,u^{n-1}\) and</p>
+<div class="math">\[
+\mathrm{KL}(\pi_n\,\|\,\pi) = \mathbb{E}_{u\sim n u^{n-1}}\big[\log n + (n-1)\log u\big] = \log n - \frac{n-1}{n},
+\]</div>
+<p>because \(\mathbb{E}[\log u] = -1/n\) when \(u\sim\mathrm{Beta}(n,1)\). Plugging in numbers:</p>
+<table class="plain">
+<thead><tr><th>n</th><th>KL (nats)</th></tr></thead>
+<tbody><tr><td>4</td><td>0.64</td></tr><tr><td>16</td><td>1.84</td></tr><tr><td>64</td><td>3.17</td></tr></tbody>
+</table>
+<p>For large <em>n</em> the bill is basically \(\log n\): every doubling costs about \(\ln 2 \approx 0.69\) nats more. Two caveats. First, with ties (a binary verifier gives only 0 or 1) the formula is no longer exact; Beirami et al. show it is an <em>upper bound</em> on the true KL and not tight in general, so read the table as a ceiling for those cases. Second, KL is only the cost side. Whether the extra reward is worth it depends on the reward model, and a noisy grader makes the benefit curve bell-shaped in \(\log n\): past some point you are optimising the grader's mistakes.</p>
+<p>(While re-checking, I noticed my own notes had 3.22 for \(n=64\). The correct value is \(\ln 64 - 63/64 = 3.17\).)</p>
+
+<h2>2. Voting saturates because samples are not independent</h2>
+<p>Majority voting works by Condorcet's logic: if each sample is right with probability \(p>\tfrac12\) and samples are independent, the vote gets arbitrarily good. But samples from the <em>same</em> model on the <em>same</em> question share its blind spots. Model that with a correlation \(\rho\) between the indicators "sample \(i\) is correct". The variance of the vote share is</p>
+<div class="math">\[
+\operatorname{Var}(\hat p) = \frac{p(1-p)}{n}\big[1+(n-1)\rho\big]
+\quad\Longrightarrow\quad
+n_{\text{eff}} = \frac{n}{1+(n-1)\rho}\;\xrightarrow[n\to\infty]{}\;\frac1\rho .
+\]</div>
+<p>With \(\rho = 0.05\), a modest correlation:</p>
+<table class="plain">
+<thead><tr><th>samples n</th><th>4</th><th>16</th><th>64</th><th>256</th><th>∞</th></tr></thead>
+<tbody><tr><td>effective n</td><td>3.5</td><td>9.1</td><td>15.4</td><td>18.6</td><td>20</td></tr></tbody>
+</table>
+<p>Going from 64 to 256 samples buys 3 effective samples for 4× the cost. At \(\rho=0.08\) and \(n=16\), the variance is already \(1+15\times0.08 = 2.2\) times what the independent formula promises. This is also why raising the sampling temperature helps up to a point: it lowers \(\rho\). Past that point you are sampling worse answers.</p>
+<p>One honest limit: this treats the samples as exchangeable with a single \(\rho\) (which must satisfy \(\rho\ge -1/(n-1)\)). In reality \(\rho\) is really "how much of the error is <em>question-level</em> difficulty", and that varies wildly across questions. What it does explain is the stubborn flat top of the accuracy-vs-samples curve: voting removes sampling noise, not the model's systematic mistakes.</p>
+
+<h2>3. Thinking longer can make things worse</h2>
+<p>The third kind of test-time compute is sequential: let the model keep reasoning, revising, saying "wait". Model each extra reasoning round as one step of a two-state Markov chain over {correct, wrong}. A round fixes a wrong answer with probability \(a\) and breaks a correct one with probability \(b\). If \(A_k\) is the accuracy after \(k\) rounds,</p>
+<div class="math">\[
+A_{k+1} = A_k(1-b) + (1-A_k)\,a
+\quad\Longrightarrow\quad
+A_k = A_\infty + (A_0 - A_\infty)(1-a-b)^k,\qquad A_\infty = \frac{a}{a+b}.
+\]</div>
+<p>It is a linear recurrence with slope \(1-a-b\), whose fixed point is \(A_\infty\). Three consequences fall straight out:</p>
+<ul>
+<li><b>It saturates.</b> The gap to \(A_\infty\) shrinks geometrically, independent of the budget. With \(a=0.245,\ b=0.105\) the slope is 0.65, and a model starting at 0.25 is within one point of the ceiling after \(\ln(0.01/0.45)/\ln 0.65\approx 9\) rounds.</li>
+<li><b>The ceiling is not 1.</b> It is \(a/(a+b)\): the more often a round breaks a correct answer, the lower the ceiling.</li>
+<li><b>Thinking longer hurts when \(A_0 > a/(a+b)\).</b> If the model is already right more often than the long-run rate, extra rounds drag it <em>down</em> toward \(A_\infty\).</li>
+</ul>
+<figure>
+<svg viewBox="0 0 640 330" role="img" aria-label="Accuracy after k extra reasoning rounds: a weak starter climbs to 0.70, a strong starter falls to 0.70" style="width:100%;height:auto;font:12px var(--font)">
+<line x1="56" x2="616" y1="278.0" y2="278.0" style="stroke:var(--line)"/>
+<text x="48" y="282.0" text-anchor="end" style="fill:var(--ink-mute)">0.20</text>
+<line x1="56" x2="616" y1="212.5" y2="212.5" style="stroke:var(--line)"/>
+<text x="48" y="216.5" text-anchor="end" style="fill:var(--ink-mute)">0.40</text>
+<line x1="56" x2="616" y1="147.0" y2="147.0" style="stroke:var(--line)"/>
+<text x="48" y="151.0" text-anchor="end" style="fill:var(--ink-mute)">0.60</text>
+<line x1="56" x2="616" y1="81.5" y2="81.5" style="stroke:var(--line)"/>
+<text x="48" y="85.5" text-anchor="end" style="fill:var(--ink-mute)">0.80</text>
+<line x1="56" x2="616" y1="16.0" y2="16.0" style="stroke:var(--line)"/>
+<text x="48" y="20.0" text-anchor="end" style="fill:var(--ink-mute)">1.00</text>
+<line x1="56.0" x2="56.0" y1="278" y2="283" style="stroke:var(--ink-mute)"/>
+<text x="56.0" y="298" text-anchor="middle" style="fill:var(--ink-mute)">0</text>
+<line x1="168.0" x2="168.0" y1="278" y2="283" style="stroke:var(--ink-mute)"/>
+<text x="168.0" y="298" text-anchor="middle" style="fill:var(--ink-mute)">2</text>
+<line x1="280.0" x2="280.0" y1="278" y2="283" style="stroke:var(--ink-mute)"/>
+<text x="280.0" y="298" text-anchor="middle" style="fill:var(--ink-mute)">4</text>
+<line x1="392.0" x2="392.0" y1="278" y2="283" style="stroke:var(--ink-mute)"/>
+<text x="392.0" y="298" text-anchor="middle" style="fill:var(--ink-mute)">6</text>
+<line x1="504.0" x2="504.0" y1="278" y2="283" style="stroke:var(--ink-mute)"/>
+<text x="504.0" y="298" text-anchor="middle" style="fill:var(--ink-mute)">8</text>
+<line x1="616.0" x2="616.0" y1="278" y2="283" style="stroke:var(--ink-mute)"/>
+<text x="616.0" y="298" text-anchor="middle" style="fill:var(--ink-mute)">10</text>
+<line x1="56" x2="56" y1="16" y2="278" style="stroke:var(--ink-mute)"/>
+<line x1="56" x2="616" y1="278" y2="278" style="stroke:var(--ink-mute)"/>
+<text x="336.0" y="322" text-anchor="middle" style="fill:var(--ink-soft)">extra reasoning rounds k</text>
+<text transform="translate(14 147.0) rotate(-90)" text-anchor="middle" style="fill:var(--ink-soft)">accuracy A_k</text>
+<path d="M56.0 261.6 L112.0 210.0 L168.0 176.5 L224.0 154.7 L280.0 140.6 L336.0 131.3 L392.0 125.4 L448.0 121.5 L504.0 118.9 L560.0 117.3 L616.0 116.2" fill="none" style="stroke:var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+<text x="246.4" y="185.4" text-anchor="start" style="fill:var(--accent);font-weight:600">start at 0.25: thinking longer helps</text>
+<path d="M56.0 32.4 L112.0 61.0 L168.0 79.7 L224.0 91.8 L280.0 99.6 L336.0 104.8 L392.0 108.1 L448.0 110.2 L504.0 111.6 L560.0 112.6 L616.0 113.1" fill="none" style="stroke:var(--warn)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 5"/>
+<text x="246.4" y="53.1" text-anchor="start" style="fill:var(--warn);font-weight:600">start at 0.95: thinking longer hurts</text>
+<line x1="56.0" x2="616.0" y1="114.2" y2="114.2" style="stroke:var(--ink-mute)" stroke-dasharray="2 5"/><text x="616.0" y="130.2" text-anchor="end" style="fill:var(--ink-mute)">A∞ = a/(a+b) = 0.70</text>
+</svg>
+<figcaption>Exact trajectories of the recurrence with a = 0.245, b = 0.105, so A∞ = 0.70. A weak starter climbs towards it; a strong starter decays towards it.</figcaption>
+</figure>
+<p>The third point matches the "overthinking" people report on easy problems, and it is an argument for a reasoning model having an <em>off</em> switch or an effort setting rather than a single "think more" dial. It also gives a break-even rule of thumb: buy inference compute only on questions where the starting accuracy sits below \(a/(a+b)\).</p>
+<p>The caveat: \(a\) and \(b\) are not constants. They depend on the question, on whether there is an external check (a test suite, a calculator), and on whether the model can tell its own errors from its own answers. Self-correction <em>without</em> an external signal is the regime where \(b\) tends to be non-negligible. What I would want to measure before spending the compute is \(a\) and \(b\), per question type.</p>
+
+<div class="callout"><b>Takeaway.</b> Best-of-<em>n</em> costs \(\log n-\tfrac{n-1}{n}\) nats and leans on the grader; voting caps out near \(1/\rho\) effective samples; sequential thinking converges to \(a/(a+b)\) and can fall to it from above. "More compute" is only a plan if you know which of the three ceilings you are standing under.</div>
+
+<h2>Further reading</h2>
+<ul>
+<li>Beirami et al., <a href="https://arxiv.org/abs/2401.01879">Theoretical guarantees on the best-of-n alignment policy</a> (arXiv 2401.01879) — the KL formula as an upper bound.</li>
+<li>Lilian Weng, <a href="https://lilianweng.github.io/posts/2025-05-01-thinking/">Why We Think</a> — a survey of test-time compute and whether stated reasoning is faithful.</li>
+<li>Sebastian Raschka, <a href="https://magazine.sebastianraschka.com/p/categories-of-inference-time-scaling">Categories of Inference-Time Scaling for Improved LLM Reasoning</a> and <a href="https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms">Controlling Reasoning Effort in LLMs</a>.</li>
+</ul>
+</div>
+  <div class="next"><a href="/blog/speculative-decoding/"><small>← Previous</small>Speculative decoding: the acceptance rate is 1 − TV, so train for TV, not KL</a><a href="/blog/doubly-stochastic/" style="text-align:right"><small>Next →</small>Why doubly-stochastic mixing keeps residual streams balanced</a></div>
+</article></main><footer><div class="wrap"><span>© <span id="year">2026</span> Hoang-Vu Le · Ho Chi Minh City, Viet Nam</span><span><a href="/feed.xml">RSS</a> · <a href="/">Home</a></span></div></footer>
+<script src="/assets/js/site.js" defer></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.querySelector('.prose'),{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})"></script>
+</body></html>

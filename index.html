@@ -1,290 +1,316 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>  
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Hoang-Vu Le</title>
-    <meta name="author" content="Hoang-Vu Le">
-    <meta name="description" content="A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design. ">
-    <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website">
-    <link rel="stylesheet" href="/assets/css/bootstrap.min.css?a4b3f509e79c54a512b890d73235ef04">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/css/mdb.min.css" integrity="sha256-jpjYvU3G3N6nrrBwXJoVEYI/0zw8htfFnhT9ljN3JJw=" crossorigin="anonymous">
-    <link defer rel="stylesheet" href="/assets/css/academicons.min.css?f0b7046b84e425c55f3463ac249818f5">
-    <link defer rel="stylesheet" href="/assets/css/scholar-icons.css?62b2ac103a88034e6882a5be5f3e2772">
-    <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap">
-    <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light">
-    <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22&gt;&lt;text%20y=%22.9em%22%20font-size=%2290%22&gt;%E2%9A%9B%EF%B8%8F&lt;/text&gt;&lt;/svg&gt;">
-    <link rel="stylesheet" href="/assets/css/main.css?d41d8cd98f00b204e9800998ecf8427e">
-    <link rel="canonical" href="https://prorain-hcmus.github.io/">
-    <script src="/assets/js/theme.js?9a0c749ec5240d9cda97bc72359a72c0"></script>
-    <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark">
-    <style>
-        body {
-            color: #333;
-        }
-        .dark-theme body {
-            color: #fff;
-        }
-        .bio, .i-love {
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .dark-theme .bio, .dark-theme .i-love {
-            background-color: #343a40;
-        }
-    </style>
-    <script>
-        initTheme();
-    </script>
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hoang-Vu Le — AI/ML Engineer &amp; Researcher</title>
+  <meta name="description" content="AI engineer at Bosch building production GenAI agents, and researcher in sequential recommendation, NLP and reinforcement learning. ACM RecSys 2026 (oral).">
+  <meta name="theme-color" content="#fafaf9">
+  <link rel="canonical" href="https://prorain-hcmus.github.io/">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234f46e5'/%3E%3Cstop offset='1' stop-color='%230891b2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Ctext x='16' y='21.5' font-family='monospace' font-weight='700' font-size='14' text-anchor='middle' fill='white'%3Ehv%3C/text%3E%3C/svg%3E">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Hoang-Vu Le — AI/ML Engineer &amp; Researcher">
+  <meta property="og:description" content="Production GenAI agents at Bosch. Research on sequential recommendation, NLP and RL. ACM RecSys 2026 (oral).">
+  <meta property="og:image" content="https://prorain-hcmus.github.io/assets/img/og-avatar.jpg">
+  <meta name="twitter:card" content="summary">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script>
+    // set theme before paint to avoid a flash
+    try { var t = localStorage.getItem("hvl-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+  </script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Person","name":"Hoang-Vu Le","url":"https://prorain-hcmus.github.io/","jobTitle":"AI Engineer","worksFor":{"@type":"Organization","name":"Bosch Global Software Technologies Vietnam"},"alumniOf":"University of Science, VNU-HCM","sameAs":["https://github.com/PrORain-HCMUS","https://www.linkedin.com/in/ho%C3%A0ng-v%C5%A9-l%C3%AA-66572630b/","https://www.kaggle.com/lehoangvu"]}
+  </script>
 </head>
-<body class="fixed-top-nav">
-    <header>
-        <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation">
-            <div class="container">
-                <button class="navbar-toggler collapsed ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar top-bar"></span>
-                    <span class="icon-bar middle-bar"></span>
-                    <span class="icon-bar bottom-bar"></span>
-                </button>
-                <div class="collapse navbar-collapse text-right" id="navbarNav">
-                    <ul class="navbar-nav ml-auto flex-nowrap">
-                        <li class="nav-item active">
-                            <a class="nav-link" href="/">about<span class="sr-only">(current)</span></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/blog/">blog</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/publications/">publications</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/projects/">projects</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/repositories/">repositories</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/cv/">cv</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/teaching/">learning</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/people/">material</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">submenus</a>
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                                <a class="dropdown-item" href="/publications/">publications</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="/projects/">projects</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="/blog/">blog</a>
-                            </div>
-                        </li>
-                        <li class="nav-item">
-                            <button id="search-toggle" title="Search" onclick="openSearchModal()">
-                                <span class="nav-link">ctrl k <i class="ti ti-search"></i></span>
-                            </button>
-                        </li>
-                        <li class="toggle-container">
-                            <button id="light-toggle" title="Change theme">
-                                <i class="ti ti-sun-moon" id="light-toggle-system"></i>
-                                <i class="ti ti-moon-filled" id="light-toggle-dark"></i>
-                                <i class="ti ti-sun-filled" id="light-toggle-light"></i>
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-        <progress id="progress" value="0">
-            <div class="progress-container">
-                <span class="progress-bar"></span>
-            </div>
-        </progress>
-    </header>
-    <div class="container mt-5" role="main">
-        <div class="post">
-            <header class="post-header">
-                <h1 class="post-title">
-                    <span class="font-weight-bold">Hoang-Vu</span> Le
-                </h1>
-                <p class="desc"><a href="#">Affiliations</a>. Address. Contacts. Motto. Etc.</p>
-            </header>
-            <article>
-                <div class="profile float-right">
-                    <figure>
-                        <picture>
-                            <source class="responsive-img-srcset" srcset="/assets/img/hoang-vu-le.jpg 480w,/assets/img/hoang-vu-le.jpg 800w,/assets/img/hoang-vu-le.jpg 1400w," type="image/webp" sizes="(min-width: 930px) 270.0px, (min-width: 576px) 30vw, 95vw">
-                            <img src="/assets/img/hoang-vu-le.jpg?974957d202f671e4fa6700c04e68deae" class="img-fluid z-depth-1 rounded" width="100%" height="auto" alt="hoang-vu-le.jpg" loading="eager" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
-                        </picture>
-                    </figure>
-                    <div class="more-info">
-                        <p>(+84) 786-798-668</p>
-                        <p>District 9, Ho Chi Minh City, Viet Nam</p>
-                    </div>
-                </div>
-                <div class="clearfix">
-                    <p> Hi guys, I'm Hoang-Vu Le, a passionate undergraduate student who is pursuing Artificial Intelligence at Ho Chi Minh City's University of Science. I'm also looking for new oppoturnities to learn from the seniors and currently open to work as an AI Engineer for internship. I have a knack for solving real-life problems with code and beneficial people's lives from my products. When not online, I fancy hanging out with my beloved ones and playing some sports (have been a Culers since 2010, Visca <a href="https://www.fcbarcelona.com/en/" rel="external nofollow noopener" target="_blank">Barca</a>!). </p>
-                    <p>Having spent most of my academic years learning and specializing Mathematics, you can probably say that I started as a newbie or layman for the branch of AI. However, I believe my time learning Mathematics ensure a stable fundamental for my AI carrer later on. As regards my works as a Maths-major student before University, there are some <code class="language-plaintext highlighter-rouge">seminars</code> or <code class="language-plaintext highlighter-rouge">articles</code> which you can find in <a href="/publications/">publications page</a>.</p>
-                    <P> Currently, I am living off of my team's latest product called <code class="language-plaintext highlighter-rouge">VisionWalk</code>. It's a mobile application that helps visually impaired people to navigate the world around them. And I'm also working on a new project called <code class="language-plaintext highlighter-rouge">AI-Driven</code>, this is a promising collaboration between me and my friends to build an AI-based car system that automatically detects and reports traffic signs and obstacles.
-                    </P>
-                    <h3 class="text-primary"><i class="fas fa-user-graduate"></i> Bio</h3>
-                    <ul class="list-group bio">
-                        <li class="list-group-item">
-                            <strong>2004:</strong> Born in Bao Loc City, Lam Dong Province.
-                        </li>
-                        <li class="list-group-item">
-                            <strong>2015-2019:</strong> Studied at Quang Trung Secondary School.
-                        </li>
-                        <li class="list-group-item">
-                            <strong>2019-2022:</strong> Studied at Bao Loc High School for the Gifted.
-                        </li>
-                        <li class="list-group-item">
-                            <strong>2022 - Present:</strong> Studying Artificial Intelligence at <a href="https://en.hcmus.edu.vn/" rel="external nofollow noopener" target="_blank">Ho Chi Minh City's University of Science</a>.
-                        </li>
-                        <li class="list-group-item">
-                            <strong>Current:</strong> Open to work and internships in AI Engineering roles.
-                        </li>
-                    </ul>
-                    <h3 class="text-success mt-4"><i class="fas fa-heart"></i> Interests </h3>
-                    <div class="row i-love">
-                        <div class="col-md-6">  
-                            <ul class="list-group">  
-                                <li class="list-group-item"><i class="fas fa-calculator"></i> Mathematics</li>  
-                                <li class="list-group-item"><i class="fas fa-futbol"></i> Football</li>  
-                                <li class="list-group-item"><i class="fas fa-gamepad"></i> Video games</li>  
-                            </ul>  
-                        </div>  
-                        <div class="col-md-6">  
-                            <ul class="list-group">  
-                                <li class="list-group-item"><i class="fas fa-music"></i> Playing Piano</li>  
-                                <li class="list-group-item"><i class="fas fa-book"></i> Reading</li>  
-                                <li class="list-group-item"><i class="fas fa-brain"></i> Machine Learning</li>  
-                            </ul>  
-                        </div>
-                    </div>
+<body>
+<a class="skip" href="#main">Skip to content</a>
 
-                    <style>
-                    /* Common styles for bio and interests sections */
-                    .bio, .i-love {
-                        padding: 0;
-                        margin: 20px 0;
-                    }
-                    
-                    /* Light theme styles */
-                    :root {
-                        --text-primary: #333;
-                        --text-secondary: #555;
-                        --bg-content: #f8f9fa;
-                        --heading-color: #2563eb;
-                    }
-                    
-                    .bio .list-group,
-                    .i-love .list-group {
-                        background-color: var(--bg-content);
-                        padding: 15px 20px;
-                        border-radius: 8px;
-                    }
-                    
-                    .bio .list-group-item,
-                    .i-love .list-group-item {
-                        background: transparent;
-                        color: var(--text-primary);
-                        border: none;
-                        padding: 8px 0;
-                        margin-bottom: 5px;
-                    }
-                    
-                    /* Dark theme styles */
-                    .dark-theme {
-                        --text-primary: #e9ecef;
-                        --text-secondary: #adb5bd;
-                        --bg-content: #222529;
-                        --heading-color: #60a5fa;
-                    }
-                    
-                    /* Headings */
-                    h3.text-primary,
-                    h3.text-success {
-                        color: var(--heading-color) !important;
-                        font-size: 1.5rem;
-                        margin-bottom: 1rem;
-                        font-weight: 600;
-                    }
-                    
-                    /* Bio specific styles */
-                    .bio .list-group-item strong {
-                        display: inline-block;
-                        min-width: 120px;
-                        color: var(--text-secondary);
-                    }
-                    
-                    /* Interests specific styles */
-                    .i-love .list-group-item {
-                        display: flex;
-                        align-items: center;
-                        gap: 10px;
-                    }
-                    
-                    .i-love .list-group-item i {
-                        color: var(--heading-color);
-                        width: 20px;
-                        text-align: center;
-                    }
-                    </style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-gh" viewBox="0 0 24 24"><path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
+  <symbol id="i-in" viewBox="0 0 24 24"><path fill="currentColor" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.125 2.062 2.062 0 0 1 0 4.125zM7.119 20.452H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></symbol>
+  <symbol id="i-kg" viewBox="0 0 24 24"><path fill="currentColor" d="M18.825 23.859c-.022.092-.117.141-.281.141h-3.139c-.187 0-.351-.082-.492-.248l-5.178-6.589-1.448 1.374v5.111c0 .235-.117.352-.351.352H5.505c-.236 0-.354-.117-.354-.352V.353c0-.233.118-.353.354-.353h2.431c.234 0 .351.12.351.353v14.343l6.203-6.272c.165-.165.33-.246.495-.246h3.239c.144 0 .236.06.285.18.046.149.034.255-.036.315l-6.555 6.344 6.836 8.507c.095.104.117.208.07.358"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></g></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-dl" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></g></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></g></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></g></symbol>
+  <symbol id="i-route" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></g></symbol>
+  <symbol id="i-graph" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7 6h10M6 8l5 8M18 8l-5 8"/></g></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></g></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></g></symbol>
+</svg>
 
-                </div>
-                <h2><a href="/news/" style="color: inherit">News</a></h2>
-                <div class="news">
-                    <div class="table-responsive">
-                        <table class="table table-sm table-borderless">
-                            <tr>
-                                <th scope="row" style="width: 20%">Jul 25, 2022</th>
-                                <td>
-                                    <a class="news-title" href="https://www.facebook.com/share/1DKTjhTYU8/">Becoming an US-er as Advamced-Program Student</a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row" style="width: 20%">Oct 12, 2022</th>
-                                <td>
-                                    <a class="news-title" href="/news/announcement_2/">A shocking transfer from Advamced-Program To AI </a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row" style="width: 20%">Aug 12, 2024</th>
-                                <td>Officially an U30!</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-                <div class="social">
-                    <div class="contact-icons">
-                        <a href="mailto:llehoangvum10@gmail.com" title="email"><i class="fa-solid fa-envelope"></i></a>
-                        <!-- Cập nhật icon LinkedIn với Font Awesome -->
-                        <a href="https://www.linkedin.com/in/ho%C3%A0ng-v%C5%A9-l%C3%AA-66572630b/" title="LinkedIn" rel="external nofollow noopener" target="_blank">
-                            <i class="fab fa-linkedin"></i>
-                        </a>
-                        <!-- Cập nhật icon GitHub với Font Awesome -->
-                        <a href="https://github.com/PrORain-HCMUS" title="Github" class="github">
-                            <i class="fab fa-github"></i>
-                        </a>
-                        <a href="https://scholar.google.com/citations?user=qc6CJjYAAAAJ" title="Google Scholar" rel="external nofollow noopener" target="_blank"><i class="ai ai-google-scholar"></i></a>
-                    </div>
-                </div>
-            </article>
-        </div>
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top" aria-label="Hoang-Vu Le — home"><span class="mark">hv</span><span>Hoang-Vu Le</span></a>
+    <nav class="links" id="nav-links" aria-label="Primary">
+      <a href="#about">About</a>
+      <a href="#experience">Experience</a>
+      <a href="#research">Research</a>
+      <a href="#projects">Projects</a>
+      <a href="#awards">Awards</a>
+      <a href="#writing">Writing</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="nav-tools">
+      <button class="icon-btn" data-theme-toggle aria-label="Toggle dark mode" type="button">
+        <svg class="i-sun"><use href="#i-sun"/></svg><svg class="i-moon"><use href="#i-moon"/></svg>
+      </button>
+      <button class="icon-btn menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-links"><svg><use href="#i-menu"/></svg></button>
     </div>
-    <footer class="fixed-bottom">
-        <div class="container">
-            © Copyright 2025 Hoang-Vu Le. Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" target="_blank">al-folio</a> theme.
+  </div>
+</header>
+
+<main id="main">
+<!-- ============ HERO ============ -->
+<div class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <div class="status"><span class="pulse"></span> AI Engineer at Bosch · RecSys 2026 oral</div>
+        <h1>Building AI that <span class="grad">learns from data</span> and <span class="grad">ships to production</span>.</h1>
+        <p class="lede">I'm <strong>Hoang-Vu Le</strong>, an AI/ML engineer and researcher in Ho Chi Minh City. At <strong>Bosch</strong> I build enterprise GenAI agents that are live in production plants. In research I work on <strong>sequential recommendation</strong>, <strong>NLP</strong> and <strong>reinforcement learning</strong>, with a mathematician's taste for provable guarantees.</p>
+        <div class="cta">
+          <a class="btn primary" href="#research">See my research <svg><use href="#i-arrow"/></svg></a>
+          <a class="btn" href="assets/pdf/Le_Hoang_Vu_CV.pdf"><svg><use href="#i-dl"/></svg> Download CV</a>
         </div>
-    </footer>
+        <div class="socials">
+          <a class="pill-link" href="https://github.com/PrORain-HCMUS" rel="me"><svg width="15" height="15"><use href="#i-gh"/></svg> GitHub</a>
+          <a class="pill-link" href="https://www.linkedin.com/in/ho%C3%A0ng-v%C5%A9-l%C3%AA-66572630b/" rel="me"><svg width="15" height="15"><use href="#i-in"/></svg> LinkedIn</a>
+          <a class="pill-link" href="https://www.kaggle.com/lehoangvu" rel="me"><svg width="15" height="15"><use href="#i-kg"/></svg> Kaggle</a>
+          <a class="pill-link" href="mailto:llhoangvum10@gmail.com"><svg width="15" height="15"><use href="#i-mail"/></svg> Email</a>
+        </div>
+      </div>
+      <div class="portrait">
+        <div class="frame"><picture><source srcset="assets/img/avatar.webp" type="image/webp"><img src="assets/img/avatar.jpg" width="480" height="480" alt="Portrait of Hoang-Vu Le" fetchpriority="high"></picture></div>
+        <div class="badge-float a"><b>ACM RecSys ’26</b>Main track · Oral</div>
+        <div class="badge-float b"><b>4 plants</b>live at Bosch</div>
+      </div>
+    </div>
+
+    <div class="stats reveal" role="list">
+      <div class="stat" role="listitem"><b data-count="90" data-prefix=">" data-suffix="%">&gt;90%</b><span>user adoption of the Bosch MMA assistant</span></div>
+      <div class="stat" role="listitem"><b data-count="1000" data-suffix="+">1,000+</b><span>employees served by the CDR learning bot</span></div>
+      <div class="stat" role="listitem"><b data-count="18.7" data-prefix="+" data-suffix="%">+18.7%</b><span>HR@5 gain of CONGA on long histories</span></div>
+      <div class="stat" role="listitem"><b data-count="3" data-suffix=" papers">3 papers</b><span>first/co-first author, 2026</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ABOUT ============ -->
+<section id="about">
+  <div class="wrap">
+    <div class="sec-head reveal"><div><div class="eyebrow">About</div><h2>Rigor first, then shipping.</h2></div></div>
+    <div class="about-grid">
+      <div class="card reveal">
+        <h3>Who I am</h3>
+        <p>I grew up in Bao Loc (Lam Dong), trained as a competition mathematician at Bao Loc High School for the Gifted, and now study <strong>Artificial Intelligence at the University of Science, VNU-HCMC</strong>. That background shows in how I work: I like claims that can be proved, ablated or measured.</p>
+        <p>Day to day I'm an <strong>AI Engineer at Bosch Global Software Technologies Vietnam</strong>, designing RAG and multi-agent systems on LangGraph, FastAPI and Azure OpenAI. Outside work, my research asks why sequential recommenders break on long histories and how to fix them with better architectures and geometry.</p>
+        <p style="margin:0">Away from the keyboard: football (Visca Barça since 2010), piano, and long reads on machine learning.</p>
+      </div>
+      <div class="card reveal">
+        <h3>Toolbox</h3>
+        <div class="skills">
+          <div><h4>AI / ML</h4><div class="chips"><span class="chip accent">PyTorch</span><span class="chip accent">TensorFlow</span><span class="chip accent">LangGraph</span><span class="chip accent">LangChain</span><span class="chip">Computer Vision</span><span class="chip">RAG</span><span class="chip">RecSys</span></div></div>
+          <div><h4>Backend &amp; data</h4><div class="chips"><span class="chip">FastAPI</span><span class="chip">REST design</span><span class="chip">Qdrant</span><span class="chip">Weaviate</span><span class="chip">ChromaDB</span><span class="chip">MongoDB</span><span class="chip">Redis</span><span class="chip">Cosmos DB</span></div></div>
+          <div><h4>Languages</h4><div class="chips"><span class="chip">Python</span><span class="chip">C++</span><span class="chip">Java</span><span class="chip">TypeScript</span><span class="chip">CUDA (custom kernels)</span></div></div>
+          <div><h4>Platform</h4><div class="chips"><span class="chip">Azure</span><span class="chip">GCP</span><span class="chip">Docker</span><span class="chip">MLflow</span><span class="chip">Git</span><span class="chip">LaTeX / Typst</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EXPERIENCE ============ -->
+<section id="experience">
+  <div class="wrap">
+    <div class="sec-head reveal"><div><div class="eyebrow">Experience</div><h2>Where I work</h2><p>Enterprise GenAI that real operators use every shift.</p></div></div>
+    <div class="timeline">
+      <article class="card tl-item reveal">
+        <div class="tl-top"><h3>AI Engineer</h3><span class="when">Nov 2025 — Present</span></div>
+        <div class="org">Bosch Global Software Technologies Vietnam · Ho Chi Minh City · On-site</div>
+
+        <div class="sys">
+          <h4>Mobility Manufacturing Agent (MMA) <span class="chip good">Live · 4 plants</span></h4>
+          <p class="desc">Enterprise GenAI assistant that helps plant operators troubleshoot, document and reuse solutions. <em>FastAPI, ChatXDC, LangGraph, LangChain, Azure OpenAI, Qdrant, Cosmos DB, Docker, Azure App Service.</em></p>
+          <ul>
+            <li>RAG troubleshooting assistant with an expert-assist mode over past issues and technical docs, cutting troubleshooting time by <span class="num">~35%</span>.</li>
+            <li>Guided documentation assistant that turns conversations into structured issue reports for shift-log and ticketing systems, reducing manual effort by <span class="num">~80%</span>.</li>
+            <li>Multi-plant setup with per-site data isolation and voice-to-text capture.</li>
+          </ul>
+          <div class="impact"><span class="chip accent">&gt;90% user adoption</span><span class="chip accent">RB Digital Award 2025 — Efficiency</span><span class="chip accent">Handelsblatt Best of Technology 2026 — 3rd, Process Management</span></div>
+        </div>
+
+        <div class="sys">
+          <h4>Competence Development Roadmap Chatbot (CDR Bot)</h4>
+          <p class="desc">Chatbot that recommends personalised learning paths and courses. <em>FastAPI, LangChain, LangGraph, MongoDB, Redis, Azure OpenAI, Weviate.</em></p>
+          <ul>
+            <li>Multi-agent LangGraph system for learning-path planning, course search and analytics, serving <span class="num">1,000+</span> employees.</li>
+            <li>Secure FastAPI backend (Azure AD, rate limiting) with vector search at <span class="num">~90%</span> retrieval accuracy; admin dashboard for usage and engagement.</li>
+          </ul>
+          <div class="impact"><span class="chip accent">−60% course-discovery time</span><span class="chip accent">+25% course enrolment</span></div>
+        </div>
+
+        <div class="sys">
+          <h4>PM Assistant</h4>
+          <p class="desc">Multi-agent project-management assistant across Jira and Azure DevOps. <em>LangGraph, FastAPI, ChromaDB, Azure OpenAI, MLflow.</em></p>
+          <ul>
+            <li>Five LangGraph agents for reading, writing, analysis, search and chat across the platforms.</li>
+            <li>Hybrid search (database queries + vector search + keyword ranking) over <span class="num">100k+</span> work items at <span class="num">~92%</span> success, plus automated summaries and performance monitoring.</li>
+          </ul>
+          <div class="impact"><span class="chip accent">−40% issue-triage time</span></div>
+        </div>
+      </article>
+
+      <article class="card tl-item reveal">
+        <div class="tl-top"><h3>B.Sc. Artificial Intelligence</h3><span class="when">Sep 2022 — Present</span></div>
+        <div class="org">University of Science, VNU-HCMC</div>
+        <p style="color:var(--ink-soft);margin:0">Competed in the HCMC AI Challenge 2024, Zalo AI Challenge 2025 and the Act In Space hackathon. Before that: Bao Loc High School for the Gifted (Mathematics, 2019–2022) with the top scholarship all three years and a place on the provincial Olympiad team in 2021 and 2022.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESEARCH ============ -->
+<section id="research">
+  <div class="wrap">
+    <div class="sec-head reveal"><div><div class="eyebrow">Research</div><h2>Publications</h2><p>Sequential recommendation, legal NLP and the geometry of deep residual streams.</p></div></div>
+    <div class="pubs">
+      <article class="card pub hover reveal">
+        <div class="venue"><b>RecSys ’26</b><span>20th ACM Conf. on Recommender Systems<br>Main track · Oral</span></div>
+        <div>
+          <h3>CONGA: Continual Neural Gated Architecture for Long-History Sequential Recommendation</h3>
+          <div class="authors"><b>Hoang-Vu Le</b>*, Tuong-Bach-Hy Nguyen*, Bac Le · <small>*equal contribution</small> · Minneapolis, USA · Sep 2026 · pp. 125–134 · open access (CC BY)</div>
+          <p class="abs">Diagnoses two structural failure modes of sequential recommenders on long histories — <em>positional degradation</em> and <em>hard context limits</em> — and resolves them with length-robust encoding plus neural long-term memory. State of the art on <strong>14 of 16</strong> accuracy metrics across four benchmarks, up to <strong>+18.7% HR@5</strong>, with custom CUDA kernels giving a <strong>10×</strong> faster training pipeline.</p>
+          <div class="row"><span class="chip good">Accepted · Oral</span><span class="chip">First &amp; corresponding author</span>
+            <a class="pill-link" href="https://dl.acm.org/doi/10.1145/3773078.3831761"><svg width="14" height="14"><use href="#i-ext"/></svg> ACM DL</a>
+            <a class="pill-link" href="https://prorain-hcmus.github.io/conga-page/"><svg width="14" height="14"><use href="#i-ext"/></svg> Project page</a>
+            <a class="pill-link" href="https://prorain-hcmus.github.io/conga-page/static/pdfs/CONGA-RecSys-slides.pdf"><svg width="14" height="14"><use href="#i-dl"/></svg> Slides</a>
+            <a class="pill-link" href="https://github.com/nguyentuongbachhy/CONGA"><svg width="14" height="14"><use href="#i-gh"/></svg> Code</a></div>
+        </div>
+      </article>
+
+      <article class="card pub hover reveal">
+        <div class="venue"><b>COLIEE ’26</b><span>Legal Info. Extraction &amp; Entailment · Task 2<br>Poster · ICAIL, Singapore</span></div>
+        <div>
+          <h3>ClaUSurf@COLIEE 2026 Task 2: A Two-Stage Retrieve-then-Reason Approach for Legal Case Entailment</h3>
+          <div class="authors"><b>Hoang-Vu Le</b>, Chau-Minh-Tri Vu, Truong-Giang Tran, Tuong-Bach-Hy Nguyen, Phuc-Lu Le · 2026</div>
+          <p class="abs">A fine-tuned Qwen-Embedding-3 retriever (<strong>Recall@5 = 93%</strong>) feeds an LLM entailment classifier trained with off-policy knowledge distillation — best run <strong>F1 = 0.388</strong>.</p>
+          <div class="row"><span class="chip good">Accepted · poster</span><span class="chip">Co-first &amp; corresponding author</span>
+            <a class="pill-link" href="https://github.com/PrORain-HCMUS/ClaUSurf-COLIEE"><svg width="14" height="14"><use href="#i-gh"/></svg> Code</a></div>
+        </div>
+      </article>
+
+      <article class="card pub hover reveal">
+        <div class="venue"><b>RET ’26</b><span>Residual-stream theory</span></div>
+        <div>
+          <h3>Not All Residuals Are Equal: Doubly-Stochastic Mixing Guarantees Balanced Gradient Flow in Multi-Stream Transformers</h3>
+          <div class="authors"><b>Hoang-Vu Le</b>, Tuong-Bach-Hy Nguyen, Huu-Sang Le, Tien-Dat Truong, Bac Le · 2026</div>
+          <p class="abs">Proves that doubly-stochastic mixing is <em>necessary and sufficient</em> for balanced gradient flow across parallel residual streams, grounds the result in Riemannian geometry, and validates it on four sequential-recommendation benchmarks.</p>
+          <div class="row"><span class="chip">First &amp; corresponding author</span></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROJECTS ============ -->
+<section id="projects">
+  <div class="wrap">
+    <div class="sec-head reveal"><div><div class="eyebrow">Projects</div><h2>Things I've built</h2><p>Open-source and competition work beyond my day job.</p></div>
+      <a class="btn" href="https://github.com/PrORain-HCMUS?tab=repositories"><svg><use href="#i-gh"/></svg> All repositories</a></div>
+    <div class="grid g2">
+      <article class="card hover proj reveal">
+        <div class="top"><div><h3>VisionWalk</h3><div class="chips" style="margin-top:8px"><span class="chip">Back-end · team of 4</span></div></div><div class="ico"><svg><use href="#i-eye"/></svg></div></div>
+        <p>A mobile assistant that guides visually impaired people with real-time voice: object and traffic-sign detection with Gemini 1.5 at under one second, bidirectional Google Cloud STT/TTS, and GPS routing with SQLite history.</p>
+        <div class="result">10/10 in the Introduction to NLP course · showcased at the HCMUS × VNG Job Fair 2025 · under review by Ho Chi Minh City for large-scale deployment.</div>
+        <div class="foot"><span class="chip">Gemini 1.5</span><span class="chip">TFLite</span><span class="chip">React Native</span><span class="chip">FastAPI</span>
+          <a class="pill-link" href="https://github.com/PrORain-HCMUS/VisionWalk"><svg width="14" height="14"><use href="#i-gh"/></svg> Code</a></div>
+      </article>
+      <article class="card hover proj reveal">
+        <div class="top"><div><h3>VuDa-Chatbot-o2</h3><div class="chips" style="margin-top:8px"><span class="chip">Full-stack · solo</span></div></div><div class="ico"><svg><use href="#i-search"/></svg></div></div>
+        <p>A lightweight Gradio chatbot that unifies RAG, deep research, data analysis and mind-mapping: four retrieval modes (hybrid, graph, naive, agent) over PDF/CSV uploads, Google-search evidence scraping, in-chat pandas/matplotlib EDA and an Evidence Inspector to pin or exclude sources.</p>
+        <div class="result">Cuts document-research time by ~50%.</div>
+        <div class="foot"><span class="chip">Gradio</span><span class="chip">Docling</span><span class="chip">LangChain</span><span class="chip">OCR</span>
+          <a class="pill-link" href="https://github.com/PrORain-HCMUS/VuDa-Chatbot-o2"><svg width="14" height="14"><use href="#i-gh"/></svg> Code</a></div>
+      </article>
+      <article class="card hover proj reveal">
+        <div class="top"><div><h3>Homogenous AutoEncoder</h3><div class="chips" style="margin-top:8px"><span class="chip">CSC14120 · team of 3</span></div></div><div class="ico"><svg><use href="#i-graph"/></svg></div></div>
+        <p>A CUDA-accelerated convolutional autoencoder plus SVM pipeline for CIFAR-10, written from scratch to study GPU parallelism: naive kernels to optimised ones, benchmarked against a CPU baseline.</p>
+        <div class="result">~505× speed-up over the CPU baseline (86.7 h → ~10.3 min) at ~71% CIFAR-10 accuracy from SVM on the learned features.</div>
+        <div class="foot"><span class="chip">CUDA</span><span class="chip">C++</span><span class="chip">SVM</span>
+          <a class="pill-link" href="https://github.com/PrORain-HCMUS/Homogenous-AutoEncoder"><svg width="14" height="14"><use href="#i-gh"/></svg> Code</a></div>
+      </article>
+      <article class="card hover proj reveal">
+        <div class="top"><div><h3>AeroEyes — Zalo AI 2025</h3><div class="chips" style="margin-top:8px"><span class="chip">Team DLUS</span></div></div><div class="ico"><svg><use href="#i-route"/></svg></div></div>
+        <p>Zero-shot small-object detection and re-identification for rescue drones: a YOLO11s detector with a Siamese MobileNetV4 re-ID head, sized (~48.6M parameters) to fit the Jetson Xavier NX 50M-parameter limit.</p>
+        <div class="foot"><span class="chip">YOLO11</span><span class="chip">MobileNetV4</span><span class="chip">Edge AI</span>
+          <a class="pill-link" href="https://github.com/PrORain-HCMUS/Zalo-AI-DLUS"><svg width="14" height="14"><use href="#i-gh"/></svg> Code</a></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AWARDS ============ -->
+<section id="awards">
+  <div class="wrap">
+    <div class="sec-head reveal"><div><div class="eyebrow">Recognition</div><h2>Awards &amp; certifications</h2></div></div>
+    <div class="card reveal">
+      <div class="awards">
+        <div class="award star"><span class="yr">2026</span><div><b>Act In Space International Hackathon — Finalist</b><span>1st at HCMC regional round and National Final</span></div></div>
+        <div class="award star"><span class="yr">2026</span><div><b>Handelsblatt Best of Technology — 3rd place</b><span>Process Management, with Bosch MMA</span></div></div>
+        <div class="award star"><span class="yr">2025</span><div><b>RB Digital Award — Efficiency</b><span>Winner, with Bosch MMA</span></div></div>
+        <div class="award"><span class="yr">2026</span><div><b>Eurêka Student Scientific Research Award (28th)</b><span>Nominated · in progress</span></div></div>
+        <div class="award"><span class="yr">2022</span><div><b>Iranian Geometry Olympiad — Advanced</b><span>Aluminium Compass</span></div></div>
+        <div class="award"><span class="yr">2021–22</span><div><b>Lam Dong Provincial Mathematics Competition</b><span>Second Prize</span></div></div>
+        <div class="award"><span class="yr">2021</span><div><b>Traditional 30/4 Olympic — Grade 11 Maths</b><span>Silver Medal</span></div></div>
+        <div class="award"><span class="yr">2021</span><div><b>Third Final Mathematical Cup (FMC)</b><span>Bronze Medal</span></div></div>
+        <div class="award"><span class="yr">2024</span><div><b>Coursera ML Specialization · Android · Udemy NLP</b><span>Certificates of completion; plus Iranian Geometry Olympiad jury certification</span></div></div>
+        <div class="award"><span class="yr">2022</span><div><b>IELTS — Band 7.5</b><span>International English Language Testing System</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WRITING ============ -->
+<section id="writing">
+  <div class="wrap">
+    <div class="sec-head reveal"><div><div class="eyebrow">Writing</div><h2>Notes &amp; essays</h2><p>Working notes on AI, ML, RL and software engineering — written to make myself understand things properly.</p></div>
+      <a class="btn" href="blog/">All writing <svg><use href="#i-arrow"/></svg></a></div>
+    <div class="posts">
+      <!--POSTS--><a class="card hover post reveal" href="blog/speculative-decoding/"><div class="cover"><svg viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="g0" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#0891b2"/></linearGradient></defs><rect width="400" height="180" fill="url(#g0)"/><path d="M0 60 C 80 30, 140 95, 220 60 S 340 30, 400 64" fill="none" stroke="#fff" stroke-opacity="0.50" stroke-width="2"/><path d="M0 74 C 80 44, 140 109, 220 74 S 340 44, 400 78" fill="none" stroke="#fff" stroke-opacity="0.43" stroke-width="2"/><path d="M0 88 C 80 58, 140 123, 220 88 S 340 58, 400 92" fill="none" stroke="#fff" stroke-opacity="0.36" stroke-width="2"/><path d="M0 102 C 80 72, 140 137, 220 102 S 340 72, 400 106" fill="none" stroke="#fff" stroke-opacity="0.29" stroke-width="2"/><path d="M0 116 C 80 86, 140 151, 220 116 S 340 86, 400 120" fill="none" stroke="#fff" stroke-opacity="0.22" stroke-width="2"/><path d="M0 130 C 80 100, 140 165, 220 130 S 340 100, 400 134" fill="none" stroke="#fff" stroke-opacity="0.15" stroke-width="2"/></svg><span class="tag">LLMs</span></div><div class="body"><h3>Speculative decoding: the acceptance rate is 1 − TV, so train for TV, not KL</h3><p>Speculative decoding is lossless, and its acceptance rate is exactly 1 − TV(p, q). Why that makes KL the wrong objective for training the draft model.</p><div class="meta"><span>Nov 1, 2026</span><span>8 min</span></div></div></a><a class="card hover post reveal" href="blog/best-of-n/"><div class="cover"><svg viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#db2777"/></linearGradient></defs><rect width="400" height="180" fill="url(#g1)"/><rect x="30" y="150" width="48" height="20" rx="6" fill="#fff" fill-opacity="0.16"/><rect x="92" y="130" width="48" height="40" rx="6" fill="#fff" fill-opacity="0.22"/><rect x="154" y="110" width="48" height="60" rx="6" fill="#fff" fill-opacity="0.28"/><rect x="216" y="90" width="48" height="80" rx="6" fill="#fff" fill-opacity="0.34"/><rect x="278" y="70" width="48" height="100" rx="6" fill="#fff" fill-opacity="0.40"/><rect x="340" y="50" width="48" height="120" rx="6" fill="#fff" fill-opacity="0.46"/></svg><span class="tag">Reasoning</span></div><div class="body"><h3>Thinking longer, voting more: the maths of why test-time compute saturates</h3><p>Best-of-n costs log n − (n−1)/n nats of KL, voting saturates near 1/ρ effective samples, and thinking longer can lower accuracy. Three ceilings.</p><div class="meta"><span>Nov 1, 2026</span><span>9 min</span></div></div></a><a class="card hover post reveal" href="blog/doubly-stochastic/"><div class="cover"><svg viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0e7490"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><rect width="400" height="180" fill="url(#g2)"/><circle cx="40" cy="36" r="3" fill="#fff" fill-opacity=".45"/><circle cx="40" cy="72" r="4" fill="#fff" fill-opacity=".45"/><circle cx="40" cy="108" r="5" fill="#fff" fill-opacity=".45"/><circle cx="40" cy="144" r="6" fill="#fff" fill-opacity=".45"/><circle cx="84" cy="36" r="6" fill="#fff" fill-opacity=".45"/><circle cx="84" cy="72" r="3" fill="#fff" fill-opacity=".45"/><circle cx="84" cy="108" r="4" fill="#fff" fill-opacity=".45"/><circle cx="84" cy="144" r="5" fill="#fff" fill-opacity=".45"/><circle cx="128" cy="36" r="5" fill="#fff" fill-opacity=".45"/><circle cx="128" cy="72" r="6" fill="#fff" fill-opacity=".45"/><circle cx="128" cy="108" r="3" fill="#fff" fill-opacity=".45"/><circle cx="128" cy="144" r="4" fill="#fff" fill-opacity=".45"/><circle cx="172" cy="36" r="4" fill="#fff" fill-opacity=".45"/><circle cx="172" cy="72" r="5" fill="#fff" fill-opacity=".45"/><circle cx="172" cy="108" r="6" fill="#fff" fill-opacity=".45"/><circle cx="172" cy="144" r="3" fill="#fff" fill-opacity=".45"/><circle cx="216" cy="36" r="3" fill="#fff" fill-opacity=".45"/><circle cx="216" cy="72" r="4" fill="#fff" fill-opacity=".45"/><circle cx="216" cy="108" r="5" fill="#fff" fill-opacity=".45"/><circle cx="216" cy="144" r="6" fill="#fff" fill-opacity=".45"/><circle cx="260" cy="36" r="6" fill="#fff" fill-opacity=".45"/><circle cx="260" cy="72" r="3" fill="#fff" fill-opacity=".45"/><circle cx="260" cy="108" r="4" fill="#fff" fill-opacity=".45"/><circle cx="260" cy="144" r="5" fill="#fff" fill-opacity=".45"/><circle cx="304" cy="36" r="5" fill="#fff" fill-opacity=".45"/><circle cx="304" cy="72" r="6" fill="#fff" fill-opacity=".45"/><circle cx="304" cy="108" r="3" fill="#fff" fill-opacity=".45"/><circle cx="304" cy="144" r="4" fill="#fff" fill-opacity=".45"/><circle cx="348" cy="36" r="4" fill="#fff" fill-opacity=".45"/><circle cx="348" cy="72" r="5" fill="#fff" fill-opacity=".45"/><circle cx="348" cy="108" r="6" fill="#fff" fill-opacity=".45"/><circle cx="348" cy="144" r="3" fill="#fff" fill-opacity=".45"/><circle cx="392" cy="36" r="3" fill="#fff" fill-opacity=".45"/><circle cx="392" cy="72" r="4" fill="#fff" fill-opacity=".45"/><circle cx="392" cy="108" r="5" fill="#fff" fill-opacity=".45"/><circle cx="392" cy="144" r="6" fill="#fff" fill-opacity=".45"/></svg><span class="tag">Architectures</span></div><div class="body"><h3>Why doubly-stochastic mixing keeps residual streams balanced</h3><p>Row sums of one are not enough. Why the mixing matrix between parallel residual streams should be doubly stochastic, shown with a short proof sketch and a toy experiment.</p><div class="meta"><span>Nov 1, 2026</span><span>9 min</span></div></div></a><!--/POSTS-->
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTACT ============ -->
+<section id="contact">
+  <div class="wrap">
+    <div class="card contact reveal">
+      <div class="eyebrow" style="justify-content:center">Contact</div>
+      <h2>Let's build something rigorous.</h2>
+      <p>Research collaborations, interesting engineering problems, or a chat about recommender systems and agents — my inbox is open.</p>
+      <div class="cta">
+        <a class="btn primary" href="mailto:llhoangvum10@gmail.com"><svg><use href="#i-mail"/></svg> llhoangvum10@gmail.com</a>
+        <a class="btn" href="https://www.linkedin.com/in/ho%C3%A0ng-v%C5%A9-l%C3%AA-66572630b/"><svg><use href="#i-in"/></svg> LinkedIn</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="year">2026</span> Hoang-Vu Le · Ho Chi Minh City, Viet Nam</span>
+    <span>Hand-built, no trackers. <a href="https://github.com/PrORain-HCMUS/PrORain-HCMUS.github.io">Source</a></span>
+  </div>
+</footer>
+<script src="assets/js/site.js" defer></script>
 </body>
 </html>
