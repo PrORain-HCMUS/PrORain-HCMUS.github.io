@@ -4,27 +4,28 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chinchilla in one derivation — Hoang-Vu Le</title>
   <meta name="description" content="One short calculation turns a three-term loss and a compute budget into the Chinchilla allocation rule. Here is the derivation, a picture, and the caveats.">
-  <meta name="theme-color" content="#fafaf9">
+  <meta name="theme-color" content="#f4efe4">
   <link rel="canonical" href="https://prorain-hcmus.github.io/blog/chinchilla/">
   <meta property="og:type" content="article"><meta property="og:title" content="Chinchilla in one derivation — Hoang-Vu Le"><meta property="og:description" content="One short calculation turns a three-term loss and a compute budget into the Chinchilla allocation rule. Here is the derivation, a picture, and the caveats."><meta property="og:image" content="https://prorain-hcmus.github.io/assets/img/og-avatar.jpg">
   <link rel="alternate" type="application/rss+xml" title="Hoang-Vu Le — Notes" href="/feed.xml">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%234f46e5'/%3E%3Ctext x='16' y='21.5' font-family='monospace' font-weight='700' font-size='14' text-anchor='middle' fill='white'%3Ehv%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23e2502f'/%3E%3Ctext x='16' y='21.5' font-family='monospace' font-weight='700' font-size='14' text-anchor='middle' fill='white'%3Ehv%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="/assets/css/site.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Chinchilla in one derivation", "description": "One short calculation turns a three-term loss and a compute budget into the Chinchilla allocation rule. Here is the derivation, a picture, and the caveats.", "datePublished": "2026-11-01", "author": {"@type": "Person", "name": "Hoang-Vu Le", "url": "https://prorain-hcmus.github.io/"}, "mainEntityOfPage": "https://prorain-hcmus.github.io/blog/chinchilla/"}</script>
   <script>try{var t=localStorage.getItem("hvl-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="progress" aria-hidden="true"></div>
+<div class="band" aria-hidden="true"><i></i></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></symbol>
 </svg>
-<header class="nav"><div class="wrap nav-in">
+<nav class="vdial" aria-label="Sections"><div class="track"></div><div class="marks"></div><div class="needle" aria-hidden="true"><span class="arrow"></span></div></nav>
+<header class="nav"><div class="nav-in">
   <a class="brand" href="/" aria-label="Hoang-Vu Le — home"><span class="mark">hv</span><span>Hoang-Vu Le</span></a>
   <nav class="links" id="nav-links" aria-label="Primary">
     <a href="/#about">About</a><a href="/#experience">Experience</a><a href="/#research">Research</a><a href="/#projects">Projects</a><a href="/#awards">Awards</a><a href="/blog/" class="active">Writing</a><a href="/#contact">Contact</a>
