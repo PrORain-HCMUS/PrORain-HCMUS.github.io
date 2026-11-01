@@ -40,6 +40,7 @@
   <h1>Speculative decoding: the acceptance rate is 1 − TV, so train for TV, not KL</h1>
   <p class="dek">A small model drafts, a big model checks, and the output is provably unchanged. Why the speed-up is a total-variation quantity, and what that implies for how drafters should be trained.</p>
   <div class="byline"><img src="/assets/img/avatar.jpg" width="38" height="38" alt=""><div><b style="color:var(--ink)">Hoang-Vu Le</b> · Nov 1, 2026 · 8 min read</div></div>
+  
   <div class="prose"><p>How can a small, sloppy model make a big, careful model faster — <em>without changing a single token the big model would have said</em>? That sounds like a free lunch, so I wanted to see exactly where the catch is. These are notes while studying speculative decoding; none of the core results are mine (see the reading list at the end), but the last section, on training objectives, is the part I found most useful.</p>
 
 <h2>The procedure in one paragraph</h2>

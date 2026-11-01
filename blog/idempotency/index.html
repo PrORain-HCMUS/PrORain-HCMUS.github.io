@@ -40,6 +40,7 @@
   <h1>Idempotency keys: making retries safe</h1>
   <p class="dek">The small header that stops a timeout from charging someone twice, with a FastAPI implementation you can run.</p>
   <div class="byline"><img src="/assets/img/avatar.jpg" width="38" height="38" alt=""><div><b style="color:var(--ink)">Hoang-Vu Le</b> · Nov 1, 2026 · 8 min read</div></div>
+  
   <div class="prose"><p>A client sends <code>POST /payments</code> and the connection dies before the response arrives. Did the payment happen? The client cannot know, so it does the only sensible thing and retries. If the server treats the retry as a brand-new request, the customer is charged twice.</p>
 <p>The same shape shows up everywhere there is a retry loop: a mobile app on a flaky network, a message queue with at-least-once delivery, and, increasingly, an <strong>agent orchestrator</strong> that re-runs a failed step, which re-runs every tool call inside it. The fix is old and boring, which is why I like it. This is general backend knowledge rather than anything specific to one codebase.</p>
 

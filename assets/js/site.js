@@ -143,9 +143,8 @@
   } else Array.prototype.forEach.call(items, function (el) { el.classList.add("in"); });
 
   /* ---- reading list filters ---- */
-  var bar = document.querySelector("[data-filters]");
-  if (bar) {
-    var rows = document.querySelectorAll("[data-tag]");
+  Array.prototype.forEach.call(document.querySelectorAll("[data-filters]"), function (bar) {
+    var rows = document.querySelectorAll(bar.getAttribute("data-filters") || "[data-tag]");
     bar.addEventListener("click", function (e) {
       var btn = e.target.closest("button[data-filter]");
       if (!btn) return;
@@ -153,7 +152,7 @@
       var f = btn.dataset.filter;
       Array.prototype.forEach.call(rows, function (r) { r.hidden = !(f === "all" || r.dataset.tag === f); });
     });
-  }
+  });
 
   /* ---- count-up stats ---- */
   Array.prototype.forEach.call(document.querySelectorAll("[data-count]"), function (el) {

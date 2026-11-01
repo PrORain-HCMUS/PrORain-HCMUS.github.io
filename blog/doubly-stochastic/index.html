@@ -40,6 +40,7 @@
   <h1>Why doubly-stochastic mixing keeps residual streams balanced</h1>
   <p class="dek">The intuition behind my RET 2026 paper, with a toy experiment you can reproduce in twenty lines of NumPy.</p>
   <div class="byline"><img src="/assets/img/avatar.jpg" width="38" height="38" alt=""><div><b style="color:var(--ink)">Hoang-Vu Le</b> · Nov 1, 2026 · 9 min read</div></div>
+  
   <div class="prose"><p>A standard transformer has one residual stream: each block reads it and adds something back. A growing family of architectures keeps <em>several</em> parallel streams and lets the model mix them between blocks. That raises an innocent-looking question: <strong>what constraint should the mixing matrix obey?</strong> My paper <em>Not All Residuals Are Equal</em> (RET 2026) and the KromHC component of CONGA are both about one answer, <em>doubly stochastic</em>. The proof in the paper is sharper than anything here, so this post is just the intuition I use to think about it, plus a small experiment.</p>
 
 <h2>Setup</h2>

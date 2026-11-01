@@ -40,6 +40,7 @@
   <h1>How to read an LLM benchmark without fooling yourself</h1>
   <p class="dek">A two-point gap on a leaderboard can be noise, pass@64 near 100% says little about reliability, and Elo is one line of gradient descent.</p>
   <div class="byline"><img src="/assets/img/avatar.jpg" width="38" height="38" alt=""><div><b style="color:var(--ink)">Hoang-Vu Le</b> · Nov 1, 2026 · 9 min read</div></div>
+  
   <div class="prose"><p>A new model scores 82.1 on a benchmark and last month's scored 80.4. Is it better? Before the number goes in a slide, I want to know whether 1.7 points is signal. These are my study notes on the five checks I now run on any evaluation result: sampling error, <code>pass@k</code>, Elo, judge bias and Goodhart.</p>
 
 <div class="callout"><b>Notes, not results.</b> All numbers below are computed by me from the formulas, not taken from any particular leaderboard.</div>
