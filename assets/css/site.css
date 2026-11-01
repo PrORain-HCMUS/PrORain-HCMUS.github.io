@@ -244,7 +244,7 @@ h2::before { content: ""; display: block; width: 64px; height: 12px; margin-bott
 .post .meta .has3d-badge::before { content: "▲ "; color: var(--teal); }
 
 /* blog post: opening 3D figure and paper figures */
-.article .post-scene { width: min(980px, 100vw - 32px); position: relative; left: 50%; transform: translateX(-50%); margin: 6px 0 38px; }
+.article .post-scene { width: min(880px, 100vw - 32px); position: relative; left: 50%; transform: translateX(-50%); margin: 6px 0 38px; }
 .prose figure.photo { margin: 2.4rem 0; }
 .prose figure.photo .frame { background: #fff; border: 1.5px solid var(--ink); border-radius: 10px; box-shadow: 6px 6px 0 var(--ink); padding: 14px; display: grid; place-items: center; }
 .prose figure.photo img { display: block; max-width: 100%; height: auto; }

@@ -6,7 +6,7 @@
   <meta name="description" content="Speculative decoding is lossless, and its acceptance rate is exactly 1 − TV(p, q). Why that makes KL the wrong objective for training the draft model.">
   <meta name="theme-color" content="#f4efe4">
   <link rel="canonical" href="https://prorain-hcmus.github.io/blog/speculative-decoding/">
-  <meta property="og:type" content="article"><meta property="og:title" content="Speculative decoding: the acceptance rate is 1 − TV, so train for TV, not KL — Hoang-Vu Le"><meta property="og:description" content="Speculative decoding is lossless, and its acceptance rate is exactly 1 − TV(p, q). Why that makes KL the wrong objective for training the draft model."><meta property="og:image" content="https://prorain-hcmus.github.io/assets/img/og-avatar.jpg">
+  <meta property="og:type" content="article"><meta property="og:title" content="Speculative decoding: the acceptance rate is 1 − TV, so train for TV, not KL — Hoang-Vu Le"><meta property="og:description" content="Speculative decoding is lossless, and its acceptance rate is exactly 1 − TV(p, q). Why that makes KL the wrong objective for training the draft model."><meta property="og:image" content="https://prorain-hcmus.github.io/assets/img/blog/speculative-decoding/thumb.webp">
   <link rel="alternate" type="application/rss+xml" title="Hoang-Vu Le — Notes" href="/feed.xml">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23e2502f'/%3E%3Ctext x='16' y='21.5' font-family='monospace' font-weight='700' font-size='14' text-anchor='middle' fill='white'%3Ehv%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,7 +40,8 @@
   <h1>Speculative decoding: the acceptance rate is 1 − TV, so train for TV, not KL</h1>
   <p class="dek">A small model drafts, a big model checks, and the output is provably unchanged. Why the speed-up is a total-variation quantity, and what that implies for how drafters should be trained.</p>
   <div class="byline"><img src="/assets/img/avatar.jpg" width="38" height="38" alt=""><div><b style="color:var(--ink)">Hoang-Vu Le</b> · Nov 1, 2026 · 8 min read</div></div>
-  
+  <figure class="scene post-scene" id="scene-post"><canvas id="scene3d" role="img" aria-label="Animated diagram of speculative decoding: a small draft model proposes four tokens, the target model verifies them in one pass, the first rejection is replaced and the emitted tokens stream out."></canvas><svg class="scene-fallback" viewBox="0 0 700 290" role="img" aria-label="Diagram: a small draft model proposes four tokens; the large target model verifies them in one pass. The first two are accepted, the third is rejected and replaced from the residual distribution, the fourth is discarded, and three tokens are emitted."><g class="k"><rect x="38" y="70" width="14" height="66" fill="var(--paper-2)"/><path d="M60 103 H92" stroke-dasharray="5 5"/><g><rect x="96" y="62" width="44" height="60" fill="var(--paper)"/><rect x="103" y="70" width="30" height="28" fill="var(--teal)"/></g><g><rect x="150" y="62" width="44" height="60" fill="var(--paper)"/><rect x="157" y="70" width="30" height="28" fill="var(--teal)"/></g><g><rect x="204" y="62" width="44" height="60" fill="var(--paper)"/><rect x="211" y="70" width="30" height="28" fill="var(--signal)"/><path d="M204 68 L248 116" stroke-width="2.4"/></g><g opacity=".4"><rect x="258" y="62" width="44" height="60" fill="var(--paper)"/><rect x="265" y="70" width="30" height="28" fill="var(--paper-2)"/></g><rect x="312" y="62" width="44" height="60" fill="none" stroke-dasharray="5 5"/><path d="M218 54 C 260 18, 330 18, 368 54" stroke-dasharray="5 5"/><rect x="372" y="36" width="12" height="132" fill="var(--paper-2)"/><rect x="390" y="36" width="12" height="132" fill="var(--amber)"/><rect x="408" y="36" width="12" height="132" fill="var(--signal)"/><path d="M424 102 H468" stroke-dasharray="5 5"/><rect x="472" y="86" width="34" height="34" fill="var(--teal)"/><rect x="512" y="86" width="34" height="34" fill="var(--teal)"/><rect x="552" y="86" width="34" height="34" fill="var(--amber)"/><rect x="592" y="86" width="34" height="34" fill="var(--teal)"/><rect x="632" y="86" width="34" height="34" fill="var(--teal)"/><rect x="472" y="170" width="28" height="28" fill="var(--teal)"/><rect x="506" y="170" width="28" height="28" fill="var(--teal)"/><rect x="540" y="170" width="28" height="28" fill="var(--amber)"/><rect x="574" y="170" width="28" height="28" fill="var(--paper-2)"/><rect x="608" y="170" width="28" height="28" fill="var(--paper-2)"/><rect x="38" y="222" width="22" height="14" fill="var(--teal)"/><rect x="60" y="226" width="22" height="10" fill="var(--teal)"/><rect x="92" y="222" width="22" height="14" fill="var(--teal)"/><rect x="114" y="230" width="22" height="6" fill="var(--paper-2)"/></g><text x="22" y="156">DRAFT q</text><text x="352" y="196">TARGET p</text><text x="520" y="70">OUTPUT</text><text x="472" y="220">TOKENS / ROUND</text><text x="22" y="262">α = 1 − TV</text></svg>
+<figcaption>One round at a time: four drafted tokens, one target pass, tokens kept until the first rejection, plus one more from the target. Each token survives with probability α = 0.85, and the running average tends to the 3.71 derived below.</figcaption></figure>
   <div class="prose"><p>How can a small, sloppy model make a big, careful model faster — <em>without changing a single token the big model would have said</em>? That sounds like a free lunch, so I wanted to see exactly where the catch is. These are notes while studying speculative decoding; none of the core results are mine (see the reading list at the end), but the last section, on training objectives, is the part I found most useful.</p>
 
 <h2>The procedure in one paragraph</h2>
@@ -52,6 +53,9 @@
         return x
     r = np.maximum(p - q, 0); r /= r.sum()      # residual
     return rng.choice(len(r), p=r)</code></pre>
+<figure class="photo wide"><div class="frame"><img src="/assets/img/blog/speculative-decoding/trace.webp" alt="Nine lines of generated text. Green tokens were drafted and accepted, red tokens were rejected, blue tokens are the corrections; each line adds a few new tokens." width="1400" height="356" loading="lazy"></div>
+<figcaption>What a run looks like. Each line is one iteration of the algorithm: green tokens were proposed by the small model and accepted, red ones were rejected, and blue ones are the target's replacement. Here a 6M-parameter drafter let the 97M-parameter target produce a 38-token sentence in 9 serial runs.
+<span class="credit">Figure 1 of Leviathan, Kalman &amp; Matias (2023), <a href="https://arxiv.org/abs/2211.17192">arXiv:2211.17192</a>, reproduced under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; cropped.</span></figcaption></figure>
 
 <h2>Why the output is exactly \(p\)</h2>
 <p>Take a four-token vocabulary with \(p = (0.50, 0.30, 0.15, 0.05)\) and \(q = (0.40, 0.40, 0.10, 0.10)\). The probability that token \(x\) is emitted is "proposed and accepted" plus "rejected and resampled":</p>
@@ -62,11 +66,20 @@
 <p>The same number \(\alpha\) is the chance that a proposed token survives, and it is the <em>overlap</em> of the two distributions. Since \(\min(a,b) = \tfrac12\big(a+b-|a-b|\big)\),</p>
 <div class="math">\[ \alpha(p,q) \;=\; \sum_x \min\big(p(x),q(x)\big) \;=\; 1 - \tfrac12\sum_x |p(x)-q(x)| \;=\; 1-\mathrm{TV}(p,q). \]</div>
 <p>In the example, \(\mathrm{TV} = \tfrac12(0.10+0.10+0.05+0.05) = 0.15\), so \(\alpha = 0.85\). Not KL, not cross-entropy — total variation, exactly.</p>
+<figure class="photo"><div class="frame"><img src="/assets/img/blog/speculative-decoding/overlap.webp" alt="Bar chart of p and q over four tokens. The shared part of each pair is filled; the parts where p exceeds q or q exceeds p are hatched." width="1400" height="654" loading="lazy"></div>
+<figcaption>The example above, drawn. The filled part of each pair is \(\min(p,q)\), and its total is the acceptance rate. The two hatched leftovers each weigh \(\mathrm{TV}=0.15\): the target's missing mass is exactly what the residual draw fills in.
+<span class="credit">Own figure, computed from the numbers in the text.</span></figcaption></figure>
 
 <h2>From one token to a block</h2>
 <p>In practice the draft proposes \(\gamma\) tokens and the target verifies them all in one pass. Verification stops at the first rejection. If all \(\gamma\) are accepted, the target has already computed the distribution at position \(\gamma+1\), so it emits one free <em>bonus</em> token. If each position is accepted independently with probability \(\alpha\), the expected number of tokens per round is</p>
 <div class="math">\[ \mathbb{E}[\tau] \;=\; \sum_{i=0}^{\gamma}\alpha^{i} \;=\; \frac{1-\alpha^{\gamma+1}}{1-\alpha}. \]</div>
 <p>With \(\alpha=0.85\) and \(\gamma=4\): \(\mathbb{E}[\tau] = (1-0.85^5)/0.15 \approx 3.71\) tokens per round. And no matter how long the block, the ceiling is \(1/(1-\alpha) = 1/\mathrm{TV}\), which is \(6.7\) tokens here. A drafter with \(\mathrm{TV}=0.15\) can never deliver more than about 6.7 tokens per target pass.</p>
+<p>The average hides a lopsided distribution. A round ends early with probability \(\alpha^{i}(1-\alpha)\) after exactly \(i\) accepted drafts, and ends with the bonus token only if all \(\gamma\) survive. For \(\alpha=0.85,\ \gamma=4\):</p>
+<table>
+<tr><th>tokens</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
+<tr><th>prob.</th><td>0.150</td><td>0.128</td><td>0.108</td><td>0.092</td><td>0.522</td></tr>
+</table>
+<p>The probabilities sum to 1, and weighting them by the number of tokens gives 3.71 again. More than half of all rounds (\(0.85^4 = 0.522\)) are clean sweeps, and about one round in seven gets only the single token the target would have produced anyway. The animation above samples exactly this process, so its running average drifts toward 3.71 rather than toward some number I tuned.</p>
 
 <h2>Picking the draft length</h2>
 <p>Drafting isn't free. Say a round costs one target pass (\(c_t = 1\)) plus \(c_d\) per drafted token, with \(c_d/c_t = 0.12\) — a number I picked for illustration. Throughput, in tokens per unit of target time, is</p>
@@ -103,7 +116,14 @@
 </svg>
 <figcaption>Toy model: throughput \(T(\gamma)\) with \(c_d/c_t = 0.12\), acceptance independent at each position. Optimal draft lengths are 3, 4 and 9 for α = 0.6, 0.75, 0.9. Real systems violate the i.i.d. assumption: acceptance usually decays with position, so the real curves peak earlier.</figcaption>
 </figure>
-<p>This is why serious systems adapt \(\gamma\) per workload: code and other structured text accept well (high \(\alpha\), long blocks pay off), while open-ended chat accepts poorly (short blocks).</p>
+<p>The original paper plots the same trade-off the other way round: the best integer \(\gamma\) as a function of \(\alpha\), one curve per cost ratio \(c=c_d/c_t\). For \(c=0.1\) and \(\alpha\approx0.85\) the red curve sits at \(\gamma=7\); my own arithmetic for \(c=0.12\) agrees (\(\gamma^{*}=7\), \(2.64\times\)), and shows how flat the top is, since \(\gamma=4\) already gets \(2.5\times\). The staircase also explains why the optimum jumps so quickly at high \(\alpha\): the last few percentage points of acceptance buy a lot of draft length.</p>
+<figure class="photo"><div class="frame"><img src="/assets/img/blog/speculative-decoding/optimal-gamma.webp" alt="Staircase plot of the optimal draft length against the acceptance rate for four cost ratios; higher acceptance and cheaper drafting give longer optimal blocks." width="629" height="478" loading="lazy"></div>
+<figcaption>Optimal draft length \(\gamma\) as a function of \(\alpha\) for four values of \(c\).
+<span class="credit">Figure 3 of Leviathan, Kalman &amp; Matias (2023), <a href="https://arxiv.org/abs/2211.17192">arXiv:2211.17192</a>, reproduced under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; cropped.</span></figcaption></figure>
+<p>This is why serious systems adapt \(\gamma\) per workload: code and other structured text accept well (high \(\alpha\), long blocks pay off), while open-ended chat accepts poorly (short blocks). Chen et al. measured exactly that on a 70B Chinchilla target with a 4B drafter: on HumanEval (code) the average accepted fraction stays high as the draft grows, while on XSum (summarisation) it drops faster and the wall-clock time stops improving after about three drafted tokens. They report a 2–2.5× speed-up depending on the task.</p>
+<figure class="photo wide"><div class="frame"><img src="/assets/img/blog/speculative-decoding/chen-fig1.webp" alt="Three line plots against the number of draft tokens K: mean sampling time falling then flattening, acceptance rate falling, and total loop time rising roughly linearly." width="1400" height="592" loading="lazy"></div>
+<figcaption>Measured on a 70B target. Left: time to generate 128 tokens versus the number of drafted tokens \(K\). Middle: accepted tokens divided by \(K+1\), which falls as \(K\) grows, so acceptance is <em>not</em> constant across positions. Right: one loop gets steadily slower as \(K\) grows.
+<span class="credit">Figure 1 of Chen et al. (2023), <a href="https://arxiv.org/abs/2302.01318">arXiv:2302.01318</a>, reproduced under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; cropped.</span></figcaption></figure>
 
 <h2>So what should we train the drafter on?</h2>
 <p>The default is to distil the drafter with a KL loss, \(\mathrm{KL}(p\,\|\,q)\), because it is smooth and well understood. But the speed-up is governed by \(\mathrm{TV}\). How are the two related?</p>
@@ -127,15 +147,17 @@
 
 <div class="callout"><b>Takeaway.</b> Speculative decoding is lossless because \(\min(p,q)+\max(p-q,0)=p\). Its acceptance rate is exactly \(1-\mathrm{TV}(p,q)\), and its speed-up ceiling is \(1/\mathrm{TV}\). KL is a sufficient proxy only when the drafter can nearly match the target; when it cannot, the objective you train on matters, and it should be the one you are scored on.</div>
 
-<h2>Further reading</h2>
+<h2>Go to the source</h2>
 <ul>
-<li>Leviathan, Kalman, Matias — <a href="https://arxiv.org/abs/2211.17192">Fast Inference from Transformers via Speculative Decoding</a> (arXiv 2211.17192).</li>
-<li>Chen et al. — <a href="https://arxiv.org/abs/2302.01318">Accelerating Large Language Model Decoding with Speculative Sampling</a> (arXiv 2302.01318).</li>
+<li>Leviathan, Kalman, Matias — <a href="https://arxiv.org/abs/2211.17192">Fast Inference from Transformers via Speculative Decoding</a> (arXiv 2211.17192) · <a href="https://www.alphaxiv.org/abs/2211.17192">discuss on alphaXiv</a>.</li>
+<li>Chen et al. — <a href="https://arxiv.org/abs/2302.01318">Accelerating Large Language Model Decoding with Speculative Sampling</a> (arXiv 2302.01318) · <a href="https://www.alphaxiv.org/abs/2302.01318">discuss on alphaXiv</a>.</li>
+<li>Google Research — <a href="https://research.google/blog/looking-back-at-speculative-decoding/">Looking back at speculative decoding</a>, the first paper's authors on what happened next (December 2024).</li>
+<li>Hugging Face — <a href="https://huggingface.co/blog/assisted-generation">Assisted generation</a>, the same idea as it shipped in <code>transformers</code>.</li>
 <li><a href="https://en.wikipedia.org/wiki/Pinsker%27s_inequality">Pinsker's inequality</a>, for the KL–TV relationship used above.</li>
 </ul>
 </div>
-  <div class="next"><span></span><a href="/blog/best-of-n/" style="text-align:right"><small>Next →</small>Thinking longer, voting more: the maths of why test-time compute saturates</a></div>
+  <div class="next"><a href="/blog/conga-explained/"><small>← Previous</small>CONGA, explained: sequential recommendation over very long histories</a><a href="/blog/best-of-n/" style="text-align:right"><small>Next →</small>Thinking longer, voting more: the maths of why test-time compute saturates</a></div>
 </article></main><footer><div class="wrap"><span>© <span id="year">2026</span> Hoang-Vu Le · Ho Chi Minh City, Viet Nam</span><span><a href="/feed.xml">RSS</a> · <a href="/">Home</a></span></div></footer>
 <script src="/assets/js/site.js" defer></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.querySelector('.prose'),{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.querySelector('.prose'),{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script><script defer src="/assets/js/scene-kit.js"></script><script defer src="/assets/js/scenes/speculative-decoding.js"></script>
 </body></html>

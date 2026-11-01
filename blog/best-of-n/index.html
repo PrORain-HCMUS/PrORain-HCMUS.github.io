@@ -6,7 +6,7 @@
   <meta name="description" content="Best-of-n costs log n − (n−1)/n nats of KL, voting saturates near 1/ρ effective samples, and thinking longer can lower accuracy. Three ceilings.">
   <meta name="theme-color" content="#f4efe4">
   <link rel="canonical" href="https://prorain-hcmus.github.io/blog/best-of-n/">
-  <meta property="og:type" content="article"><meta property="og:title" content="Thinking longer, voting more: the maths of why test-time compute saturates — Hoang-Vu Le"><meta property="og:description" content="Best-of-n costs log n − (n−1)/n nats of KL, voting saturates near 1/ρ effective samples, and thinking longer can lower accuracy. Three ceilings."><meta property="og:image" content="https://prorain-hcmus.github.io/assets/img/og-avatar.jpg">
+  <meta property="og:type" content="article"><meta property="og:title" content="Thinking longer, voting more: the maths of why test-time compute saturates — Hoang-Vu Le"><meta property="og:description" content="Best-of-n costs log n − (n−1)/n nats of KL, voting saturates near 1/ρ effective samples, and thinking longer can lower accuracy. Three ceilings."><meta property="og:image" content="https://prorain-hcmus.github.io/assets/img/blog/best-of-n/thumb.webp">
   <link rel="alternate" type="application/rss+xml" title="Hoang-Vu Le — Notes" href="/feed.xml">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23e2502f'/%3E%3Ctext x='16' y='21.5' font-family='monospace' font-weight='700' font-size='14' text-anchor='middle' fill='white'%3Ehv%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,7 +40,7 @@
   <h1>Thinking longer, voting more: the maths of why test-time compute saturates</h1>
   <p class="dek">Best-of-n, majority voting and long chains of thought all spend compute at answer time. Each one has a ceiling you can write down.</p>
   <div class="byline"><img src="/assets/img/avatar.jpg" width="38" height="38" alt=""><div><b style="color:var(--ink)">Hoang-Vu Le</b> · Nov 1, 2026 · 9 min read</div></div>
-  
+  <figure class="scene post-scene" id="scene-post"><canvas id="scene3d" role="img" aria-label="Animated diagram: n sampled answers drawn as bars by reward, the best one is picked, and gauges show the expected best reward and the KL cost for n = 1, 4, 16 and 64"></canvas><svg class="scene-fallback" viewBox="0 0 700 290" role="img" aria-label="Diagram: sixteen sampled answers drawn as bars by reward; the tallest is picked, and two gauges show its expected reward and the KL cost growing with n."><g class="k"><rect x="36" y="146" width="15" height="86" fill="var(--paper-2)"/><rect x="58" y="100" width="15" height="132" fill="var(--paper-2)"/><rect x="80" y="187" width="15" height="45" fill="var(--paper-2)"/><rect x="102" y="110" width="15" height="122" fill="var(--paper-2)"/><rect x="124" y="160" width="15" height="72" fill="var(--paper-2)"/><rect x="146" y="160" width="15" height="72" fill="var(--paper-2)"/><rect x="168" y="74" width="15" height="158" fill="var(--signal)"/><rect x="190" y="144" width="15" height="88" fill="var(--paper-2)"/><rect x="212" y="152" width="15" height="80" fill="var(--paper-2)"/><rect x="234" y="121" width="15" height="111" fill="var(--paper-2)"/><rect x="256" y="105" width="15" height="127" fill="var(--paper-2)"/><rect x="278" y="151" width="15" height="81" fill="var(--paper-2)"/><rect x="300" y="126" width="15" height="106" fill="var(--paper-2)"/><rect x="322" y="189" width="15" height="43" fill="var(--paper-2)"/><rect x="344" y="165" width="15" height="67" fill="var(--paper-2)"/><rect x="366" y="168" width="15" height="64" fill="var(--paper-2)"/><path d="M167 68 h17 l-8.5 -17 z" fill="var(--amber)"/><path d="M26 74 H394" stroke="var(--signal)" stroke-dasharray="5 5"/><path d="M26 232 H394"/><rect x="450" y="86" width="200" height="26" fill="none"/><rect x="450" y="86" width="150" height="26" fill="var(--teal)"/><rect x="450" y="86" width="200" height="26" fill="none"/><rect x="450" y="156" width="200" height="26" fill="none"/><rect x="450" y="156" width="118" height="26" fill="var(--amber)"/><rect x="450" y="156" width="200" height="26" fill="none"/><rect x="462" y="228" width="34" height="22" fill="var(--paper)"/><rect x="508" y="228" width="34" height="22" fill="var(--paper)"/><rect x="554" y="228" width="34" height="22" fill="var(--amber)"/><rect x="600" y="228" width="34" height="22" fill="var(--paper)"/></g><text x="30" y="44">N = 16</text><text x="450" y="76">REWARD</text><text x="450" y="146">KL COST</text><text x="479" y="270" text-anchor="middle">1</text><text x="525" y="270" text-anchor="middle">4</text><text x="571" y="270" text-anchor="middle">16</text><text x="617" y="270" text-anchor="middle">64</text><text x="210" y="256" text-anchor="middle">SAMPLED ANSWERS</text></svg><figcaption>Draw n answers, keep the one the grader likes best. For a toy Gaussian reward the expected reward of the winner grows slowly while the KL bill grows like log n.</figcaption></figure>
   <div class="prose"><style>
 .prose table.plain{border-collapse:collapse;margin:1.2em auto 1.6em;font:500 .95rem var(--font)}
 .prose table.plain th,.prose table.plain td{padding:8px 16px;border-bottom:1px solid var(--line);text-align:center}
@@ -61,8 +61,51 @@
 <thead><tr><th>n</th><th>KL (nats)</th></tr></thead>
 <tbody><tr><td>4</td><td>0.64</td></tr><tr><td>16</td><td>1.84</td></tr><tr><td>64</td><td>3.17</td></tr></tbody>
 </table>
-<p>For large <em>n</em> the bill is basically \(\log n\): every doubling costs about \(\ln 2 \approx 0.69\) nats more. Two caveats. First, with ties (a binary verifier gives only 0 or 1) the formula is no longer exact; Beirami et al. show it is an <em>upper bound</em> on the true KL and not tight in general, so read the table as a ceiling for those cases. Second, KL is only the cost side. Whether the extra reward is worth it depends on the reward model, and a noisy grader makes the benefit curve bell-shaped in \(\log n\): past some point you are optimising the grader's mistakes.</p>
+<p>For large <em>n</em> the bill is basically \(\log n\): every doubling costs about \(\ln 2 \approx 0.69\) nats more. Two caveats. First, with ties (a binary verifier gives only 0 or 1) the formula is no longer exact; Beirami et al. show it is an <em>upper bound</em> on the true KL and not tight in general, so read the table as a ceiling for those cases. Second, KL is only the cost side. Whether the extra reward is worth it depends on the reward model, and when the grader's mistakes are heavy-tailed the benefit curve is bell-shaped in \(\log n\): past some point you are optimising the grader's mistakes (a simulation of this is further down).</p>
 <p>(While re-checking, I noticed my own notes had 3.22 for \(n=64\). The correct value is \(\ln 64 - 63/64 = 3.17\).)</p>
+
+<h3>How loose is the ceiling when there are ties?</h3>
+<p>The smallest example is enough. A prompt with two equally likely outcomes, \(r(0)=0\) and \(r(1)=1\), is a pass/fail verifier with a 50% pass rate. Best-of-<em>n</em> returns outcome 1 unless all \(n\) samples fail, so \(\pi_n(1) = 1-2^{-n}\) and \(\pi_n(0)=2^{-n}\). The exact KL is</p>
+<div class="math">\[
+\mathrm{KL}(\pi_n\,\|\,\pi) = \log 2 - h\!\left(2^{-n}\right),
+\]</div>
+<p>where \(h\) is the binary entropy. It can never exceed \(\log 2 = 0.69\) nats, since the policy cannot move further than "always say 1". Compare with the formula:</p>
+<table class="plain">
+<thead><tr><th>n</th><th>4</th><th>16</th><th>64</th></tr></thead>
+<tbody><tr><td>exact KL (nats)</td><td>0.46</td><td>0.69</td><td>0.69</td></tr><tr><td>\(\log n-\frac{n-1}{n}\)</td><td>0.64</td><td>1.84</td><td>3.17</td></tr></tbody>
+</table>
+<p>At \(n=64\) the formula overstates the true cost more than fourfold. The same toy example is the first figure in the Beirami et al. paper, plotted below: the dashed blue curve is the formula, the black dots the exact value.</p>
+<figure class="photo">
+<div class="frame"><img src="/assets/img/blog/best-of-n/beirami-fig1.webp" alt="Plot of KL divergence against n on a log axis. A blue dashed curve for log(n) − (n−1)/n rises to about 3.6 at n = 100. Black dots for the exact KL and a red line for the proposed estimator level off near 0.69." width="1009" height="596" loading="lazy"></div>
+<figcaption>The formula (blue, dashed) against the exact KL (black dots) for the two-outcome example above: the formula keeps climbing, the exact value stops at \(\log 2\).
+<span class="credit">Figure 1 of Beirami et al. (2024), <a href="https://arxiv.org/abs/2401.01879">arXiv:2401.01879</a>, reproduced under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; cropped from the original.</span></figcaption>
+</figure>
+
+<h3>What the KL buys</h3>
+<p>To see the benefit side in the cleanest possible case, take the reward to be standard normal under \(\pi\). The expected reward of the winner is then the expected maximum of \(n\) normal draws. I computed it by numerical integration of \(n\,x\,\phi(x)\Phi(x)^{n-1}\):</p>
+<table class="plain">
+<thead><tr><th>n</th><th>4</th><th>16</th><th>64</th></tr></thead>
+<tbody><tr><td>expected best reward</td><td>1.03</td><td>1.77</td><td>2.34</td></tr><tr><td>KL (nats)</td><td>0.64</td><td>1.84</td><td>3.17</td></tr><tr><td>reward per nat</td><td>1.62</td><td>0.96</td><td>0.74</td></tr></tbody>
+</table>
+<p>Reward is measured in standard deviations of the base policy's reward. For large \(n\) the expected maximum stays below \(\sqrt{2\ln n}\), while the KL grows like \(\ln n\), so each extra nat buys less than the one before: going from 16 to 64 samples costs 1.34 nats and gains 0.58 standard deviations. That is the shape in the figure below, and it is what the animation at the top of the page is counting.</p>
+<figure class="photo">
+<div class="frame"><img src="/assets/img/blog/best-of-n/gain-vs-kl.webp" alt="Line chart against n on a log axis: the KL cost curve in red climbs steadily to about 4.5 nats at n = 256, while the expected best reward in teal climbs more slowly to about 2.8." width="1051" height="635" loading="lazy"></div>
+<figcaption>Expected best reward (teal) and KL cost (red) as \(n\) grows, for a standard normal reward. Marked at \(n = 4, 16, 64\).
+<span class="credit">Own computation from the formulas in this post, redrawn from scratch (no third-party material).</span></figcaption>
+</figure>
+
+<h3>When the grader is the weak link</h3>
+<p>Everything above scores the winner by the reward the <em>grader</em> assigns. What you actually want is the answer's true quality, and the grader only sees that through noise. A small simulation: true quality \(\theta\sim\mathcal N(0,1)\), grader score \(\theta+\varepsilon\), keep the answer with the highest score, and report the average true quality of the kept answer over 30,000 trials per \(n\).</p>
+<ul>
+<li>With Gaussian errors (\(\sigma=1\)) the true quality keeps rising with \(n\), only more slowly: 0.73 at \(n=4\), 1.25 at 16, 2.56 at 4096.</li>
+<li>With heavy-tailed errors (\(\varepsilon = 0.7\times\) a Student-\(t\) draw with 2 degrees of freedom) it peaks near \(n=16\) at about 0.90 and then <em>falls</em>, to 0.35 at \(n=256\) and 0.08 at 4096. A larger pool is more likely to contain one answer whose grader score is huge by luck, and best-of-<em>n</em> selects exactly that one.</li>
+</ul>
+<figure class="photo">
+<div class="frame"><img src="/assets/img/blog/best-of-n/grader-errors.webp" alt="Line chart against n on a log axis: with Gaussian grader error the true quality of the chosen answer rises steadily to about 2.6; with heavy-tailed error it peaks near 0.9 at n = 16 and then falls towards zero." width="1075" height="635" loading="lazy"></div>
+<figcaption>True quality of the chosen answer as \(n\) grows, for two kinds of grader error. The shape of the error tail, not its average size, decides whether more samples keep paying.
+<span class="credit">Own simulation, seed fixed; toy model, not a measurement of any real reward model. The overoptimisation curves measured on real reward models are in Gao et al. (2022), linked below.</span></figcaption>
+</figure>
+<p>Real reward models are neither of these two toy cases, but the second is the more honest picture for open-ended generation, where the grader has blind spots that some samples will find. That is the practical reason best-of-<em>n</em> is usually run with modest \(n\) (or with a verifier that is hard to fool) and not simply cranked up.</p>
 
 <h2>2. Voting saturates because samples are not independent</h2>
 <p>Majority voting works by Condorcet's logic: if each sample is right with probability \(p>\tfrac12\) and samples are independent, the vote gets arbitrarily good. But samples from the <em>same</em> model on the <em>same</em> question share its blind spots. Model that with a correlation \(\rho\) between the indicators "sample \(i\) is correct". The variance of the vote share is</p>
@@ -76,7 +119,12 @@ n_{\text{eff}} = \frac{n}{1+(n-1)\rho}\;\xrightarrow[n\to\infty]{}\;\frac1\rho .
 <thead><tr><th>samples n</th><th>4</th><th>16</th><th>64</th><th>256</th><th>∞</th></tr></thead>
 <tbody><tr><td>effective n</td><td>3.5</td><td>9.1</td><td>15.4</td><td>18.6</td><td>20</td></tr></tbody>
 </table>
-<p>Going from 64 to 256 samples buys 3 effective samples for 4× the cost. At \(\rho=0.08\) and \(n=16\), the variance is already \(1+15\times0.08 = 2.2\) times what the independent formula promises. This is also why raising the sampling temperature helps up to a point: it lowers \(\rho\). Past that point you are sampling worse answers.</p>
+<figure class="photo">
+<div class="frame"><img src="/assets/img/blog/best-of-n/effective-samples.webp" alt="Three curves of effective samples against n on log axes, each flattening at 1/ρ: 50 for ρ = 0.02, 20 for ρ = 0.05 and 10 for ρ = 0.1." width="1067" height="635" loading="lazy"></div>
+<figcaption>Effective samples \(n/(1+(n-1)\rho)\) for three correlations, each flattening at its own \(1/\rho\) ceiling.
+<span class="credit">Own plot of the formula above (no third-party material).</span></figcaption>
+</figure>
+<p>Going from 64 to 256 samples buys 3 effective samples for 4× the cost.</p> At \(\rho=0.08\) and \(n=16\), the variance is already \(1+15\times0.08 = 2.2\) times what the independent formula promises. This is also why raising the sampling temperature helps up to a point: it lowers \(\rho\). Past that point you are sampling worse answers.</p>
 <p>One honest limit: this treats the samples as exchangeable with a single \(\rho\) (which must satisfy \(\rho\ge -1/(n-1)\)). In reality \(\rho\) is really "how much of the error is <em>question-level</em> difficulty", and that varies wildly across questions. What it does explain is the stubborn flat top of the accuracy-vs-samples curve: voting removes sampling noise, not the model's systematic mistakes.</p>
 
 <h2>3. Thinking longer can make things worse</h2>
@@ -133,15 +181,17 @@ A_k = A_\infty + (A_0 - A_\infty)(1-a-b)^k,\qquad A_\infty = \frac{a}{a+b}.
 
 <div class="callout"><b>Takeaway.</b> Best-of-<em>n</em> costs \(\log n-\tfrac{n-1}{n}\) nats and leans on the grader; voting caps out near \(1/\rho\) effective samples; sequential thinking converges to \(a/(a+b)\) and can fall to it from above. "More compute" is only a plan if you know which of the three ceilings you are standing under.</div>
 
-<h2>Further reading</h2>
+<h2>Go to the source</h2>
 <ul>
-<li>Beirami et al., <a href="https://arxiv.org/abs/2401.01879">Theoretical guarantees on the best-of-n alignment policy</a> (arXiv 2401.01879) — the KL formula as an upper bound.</li>
-<li>Lilian Weng, <a href="https://lilianweng.github.io/posts/2025-05-01-thinking/">Why We Think</a> — a survey of test-time compute and whether stated reasoning is faithful.</li>
+<li>Beirami et al., <a href="https://arxiv.org/abs/2401.01879">Theoretical guarantees on the best-of-n alignment policy</a> (arXiv 2401.01879) — the KL formula as an upper bound. <a href="https://www.alphaxiv.org/abs/2401.01879">Discuss on alphaXiv</a>.</li>
+<li>Gao, Schulman and Hilton, <a href="https://arxiv.org/abs/2210.10760">Scaling Laws for Reward Model Overoptimization</a> (arXiv 2210.10760) — measured best-of-<em>n</em> and RL overoptimisation curves on real reward models. <a href="https://www.alphaxiv.org/abs/2210.10760">Discuss on alphaXiv</a>.</li>
+<li>Brown et al., <a href="https://arxiv.org/abs/2407.21787">Large Language Monkeys: Scaling Inference Compute with Repeated Sampling</a> (arXiv 2407.21787) — how coverage grows with the number of samples.</li>
+<li>Blog write-ups: Lilian Weng, <a href="https://lilianweng.github.io/posts/2025-05-01-thinking/">Why We Think</a> — a survey of test-time compute and whether stated reasoning is faithful.</li>
 <li>Sebastian Raschka, <a href="https://magazine.sebastianraschka.com/p/categories-of-inference-time-scaling">Categories of Inference-Time Scaling for Improved LLM Reasoning</a> and <a href="https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms">Controlling Reasoning Effort in LLMs</a>.</li>
 </ul>
 </div>
   <div class="next"><a href="/blog/speculative-decoding/"><small>← Previous</small>Speculative decoding: the acceptance rate is 1 − TV, so train for TV, not KL</a><a href="/blog/doubly-stochastic/" style="text-align:right"><small>Next →</small>Why doubly-stochastic mixing keeps residual streams balanced</a></div>
 </article></main><footer><div class="wrap"><span>© <span id="year">2026</span> Hoang-Vu Le · Ho Chi Minh City, Viet Nam</span><span><a href="/feed.xml">RSS</a> · <a href="/">Home</a></span></div></footer>
 <script src="/assets/js/site.js" defer></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.querySelector('.prose'),{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.querySelector('.prose'),{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script><script defer src="/assets/js/scene-kit.js"></script><script defer src="/assets/js/scenes/best-of-n.js"></script>
 </body></html>

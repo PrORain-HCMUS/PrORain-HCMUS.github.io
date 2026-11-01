@@ -6,7 +6,7 @@
   <meta name="description" content="Networks time out, clients retry, and side effects repeat. How an Idempotency-Key makes retries safe, with a tested FastAPI example and notes on Redis and Postgres.">
   <meta name="theme-color" content="#f4efe4">
   <link rel="canonical" href="https://prorain-hcmus.github.io/blog/idempotency/">
-  <meta property="og:type" content="article"><meta property="og:title" content="Idempotency keys: making retries safe — Hoang-Vu Le"><meta property="og:description" content="Networks time out, clients retry, and side effects repeat. How an Idempotency-Key makes retries safe, with a tested FastAPI example and notes on Redis and Postgres."><meta property="og:image" content="https://prorain-hcmus.github.io/assets/img/og-avatar.jpg">
+  <meta property="og:type" content="article"><meta property="og:title" content="Idempotency keys: making retries safe — Hoang-Vu Le"><meta property="og:description" content="Networks time out, clients retry, and side effects repeat. How an Idempotency-Key makes retries safe, with a tested FastAPI example and notes on Redis and Postgres."><meta property="og:image" content="https://prorain-hcmus.github.io/assets/img/blog/idempotency/thumb.webp">
   <link rel="alternate" type="application/rss+xml" title="Hoang-Vu Le — Notes" href="/feed.xml">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23e2502f'/%3E%3Ctext x='16' y='21.5' font-family='monospace' font-weight='700' font-size='14' text-anchor='middle' fill='white'%3Ehv%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,7 +40,8 @@
   <h1>Idempotency keys: making retries safe</h1>
   <p class="dek">The small header that stops a timeout from charging someone twice, with a FastAPI implementation you can run.</p>
   <div class="byline"><img src="/assets/img/avatar.jpg" width="38" height="38" alt=""><div><b style="color:var(--ink)">Hoang-Vu Le</b> · Nov 1, 2026 · 8 min read</div></div>
-  
+  <figure class="scene post-scene" id="scene-post"><canvas id="scene3d" role="img" aria-label="Animated diagram: the same lost response and retry on two lanes. Without a key the balance is debited twice; with an Idempotency-Key the server replays the stored result and debits once."></canvas><svg class="scene-fallback" viewBox="0 0 700 290" role="img" aria-label="Diagram: the same lost response and retry on two lanes. Without a key the balance is debited twice; with an Idempotency-Key the server replays the stored result and debits once."><g class="k"><rect x="30" y="52" width="64" height="52" fill="var(--paper-2)"/><rect x="250" y="52" width="76" height="52" fill="var(--paper-2)"/><path d="M96 78 H210 M232 78 H248" stroke-dasharray="5 5"/><path d="M210 78 l8 -14 l8 28 l8 -14"/><path d="M204 94 l24 -22 M204 72 l24 22" stroke="var(--signal)"/><rect x="470" y="64" width="28" height="28" fill="var(--amber)"/><rect x="510" y="64" width="28" height="28" fill="none" stroke="var(--signal)" stroke-dasharray="3 3"/><rect x="550" y="64" width="28" height="28" fill="none" stroke-dasharray="3 3"/><rect x="30" y="182" width="64" height="52" fill="var(--paper-2)"/><rect x="250" y="182" width="76" height="52" fill="var(--paper-2)"/><rect x="396" y="182" width="70" height="52" fill="var(--paper-2)"/><rect x="418" y="198" width="26" height="20" fill="var(--amber)"/><path d="M96 208 H210 M232 208 H248 M328 208 H394" stroke-dasharray="5 5"/><path d="M210 208 l8 -14 l8 28 l8 -14"/><rect x="470" y="194" width="28" height="28" fill="var(--amber)"/><rect x="510" y="194" width="28" height="28" fill="var(--amber)"/><rect x="550" y="194" width="28" height="28" fill="none" stroke-dasharray="3 3"/></g><text x="150" y="44">NO KEY</text><text x="150" y="174">WITH KEY</text><text x="470" y="50" fill="var(--signal)">CHARGED TWICE</text><text x="470" y="180">CHARGED ONCE</text><text x="30" y="268">CLIENT</text><text x="250" y="268">SERVER</text><text x="396" y="268">KEY STORE</text><text x="500" y="268">BALANCE</text></svg>
+<figcaption>Same flaky link, same retry. Top: no key, so the retry is a second debit. Bottom: the key store recognises the retry and replays the first result.</figcaption></figure>
   <div class="prose"><p>A client sends <code>POST /payments</code> and the connection dies before the response arrives. Did the payment happen? The client cannot know, so it does the only sensible thing and retries. If the server treats the retry as a brand-new request, the customer is charged twice.</p>
 <p>The same shape shows up everywhere there is a retry loop: a mobile app on a flaky network, a message queue with at-least-once delivery, and, increasingly, an <strong>agent orchestrator</strong> that re-runs a failed step, which re-runs every tool call inside it. The fix is old and boring, which is why I like it. This is general backend knowledge rather than anything specific to one codebase.</p>
 
@@ -52,6 +53,8 @@
 </ol>
 <p>This is a widely copied convention. Stripe’s API accepts an <code>Idempotency-Key</code> header and replays the saved result for a repeated key, and there is an IETF draft that tries to standardise the header. I am only relying on that general shape here, so check the current docs for details such as key length and expiry.</p>
 
+<figure class="photo wide"><div class="frame"><img src="/assets/img/blog/idempotency/retry-sequence.webp" alt="Sequence diagram between client, server and key store. The first request is processed and debited once; its response is lost; the client retries with the same Idempotency-Key and the server replays the stored result." width="1393" height="918" loading="lazy"></div><figcaption>The whole idea on one timeline. The key is claimed once, the first response is lost, and the retry is answered from the store instead of running the charge again. <span class="credit">Original diagram drawn for this post, not taken from another source.</span></figcaption></figure>
+
 <h2>Four cases the server must handle</h2>
 <ol>
   <li><strong>Key never seen:</strong> Claim it, do the work, store the result, return it.</li>
@@ -60,6 +63,14 @@
   <li><strong>Key seen, <em>different</em> body:</strong> <code>422</code>. The client has a bug; refusing loudly beats silently ignoring its new request.</li>
 </ol>
 <p>The third row is the one people forget. Two identical requests arriving at nearly the same time are the <em>common</em> retry pattern, not an edge case, so “check if the key exists, then insert it” is a race. Claiming the key has to be a single atomic step.</p>
+
+<figure class="photo wide"><div class="frame"><img src="/assets/img/blog/idempotency/four-cases.webp" alt="Decision diagram: one atomic claim leads to four outcomes: new key runs the work and returns 201; finished key replays 201; running key returns 409; different body returns 422." width="1428" height="781" loading="lazy"></div><figcaption>The four outcomes of a single atomic <code>claim</code>. Only the first one runs the side effect. <span class="credit">Original diagram drawn for this post, not taken from another source.</span></figcaption></figure>
+
+<h2>How often does it actually bite?</h2>
+<p>It is tempting to file this under “rare”. A quick model says otherwise. Suppose each attempt reaches the server and is processed, but its response is lost with probability \(p\), and the client retries until it sees an answer or has made \(N\) attempts. Without a key, every attempt that reached the server is a separate charge, so the expected number of charges per payment is</p>
+<div class="math">\[ \mathbb{E}[\text{charges}] \;=\; \sum_{i=0}^{N-1} p^{\,i} \;=\; \frac{1-p^{N}}{1-p}. \]</div>
+<p>Take \(p = 1\%\) and \(N = 3\): that is \(1 + 0.01 + 0.0001 = 1.0101\) charges per payment, so about <strong>10,100 duplicate charges per million payments</strong>. At \(p = 5\%\) it is 52,500 per million. I checked the formula by simulating a million payments for each \(p\) (for \(p = 1\%\) the run produced 9,998 duplicates; the other points are on the chart). With a key the count is zero by construction, because every retry after the first claim is answered from the store.</p>
+<figure class="photo wide"><div class="frame"><img src="/assets/img/blog/idempotency/duplicate-rate.webp" alt="Line chart of duplicate charges per million payments against the chance a response is lost, rising linearly to about 110,000 at 10 percent for no key, and flat at zero with an idempotency key." width="1258" height="731" loading="lazy"></div><figcaption>Duplicate charges per million payments, no key versus key. The red line is the formula, the dots are simulated runs. The model assumes independent losses and that the server executes every request that reaches it; real failures are burstier, which only makes things worse. <span class="credit">Original diagram drawn for this post, not taken from another source.</span></figcaption></figure>
 
 <h2>A FastAPI implementation</h2>
 <p>Here is a compact version with an in-memory store, so it runs anywhere. The store’s <code>claim</code> method is the atomic step; the endpoint is a thin state machine around it.</p>
@@ -175,10 +186,18 @@ ON CONFLICT DO NOTHING;   -- 1 row affected = you own it</code></pre>
 <h2>Why I care about this for agents</h2>
 <p>An LLM agent calling tools is a retry-heavy system by nature: models time out, rate limits bite, orchestrators resume from a checkpoint. If a step that already created a ticket, sent an email or charged a card is replayed, the tool call runs again. Giving each side-effecting tool call a stable key (for example derived from the run id and step id) means a replay becomes a no-op instead of a duplicate. Read-only calls need no key; anything that writes does.</p>
 
+<h2>Go to the source</h2>
+<ul>
+  <li><a href="https://docs.stripe.com/api/idempotent_requests" rel="noopener">Stripe API docs: idempotent requests</a>, the convention most APIs copy.</li>
+  <li><a href="https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/" rel="noopener">IETF draft: The Idempotency-Key HTTP Header Field</a> (an active Internet-Draft, not an RFC yet).</li>
+  <li><a href="https://www.rfc-editor.org/rfc/rfc9110.html" rel="noopener">RFC 9110: HTTP Semantics</a>, for which methods are idempotent by definition.</li>
+  <li>Brandur Leach, <a href="https://brandur.org/idempotency-keys" rel="noopener">Implementing Stripe-like Idempotency Keys in Postgres</a>, a long worked example of the database side.</li>
+</ul>
+
 <div class="callout"><b>Takeaway.</b> An idempotency key turns “retry and hope” into “retry safely”. Claim the key atomically, store the result, fingerprint the body, return 409 for in-flight duplicates, and make the guarantee hold at every hop, not just at your edge.</div>
 </div>
   <div class="next"><a href="/blog/read-benchmarks/"><small>← Previous</small>How to read an LLM benchmark without fooling yourself</a><span></span></div>
 </article></main><footer><div class="wrap"><span>© <span id="year">2026</span> Hoang-Vu Le · Ho Chi Minh City, Viet Nam</span><span><a href="/feed.xml">RSS</a> · <a href="/">Home</a></span></div></footer>
 <script src="/assets/js/site.js" defer></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.querySelector('.prose'),{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.querySelector('.prose'),{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script><script defer src="/assets/js/scene-kit.js"></script><script defer src="/assets/js/scenes/idempotency.js"></script>
 </body></html>
