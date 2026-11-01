@@ -1,11 +1,21 @@
 /* Best-of-n: n answers are sampled, each gets a reward, the highest is kept. The gauges show the exact
    expectations for a toy Gaussian reward: E[max of n] and the KL bill ln n - (n-1)/n.
-   Cycles n = 1, 4, 16, 64 (the table in the post). Built on SceneKit. */
+   Cycles n = 1, 4, 16, 64 (the table in the post). Built on SceneKit.
+   Guidable: pick n (or leave it on Auto), and add grader noise sigma. Bars show the grader's score; the dark tick on each bar
+   is the answer's true quality. The winner is the highest score, and the REWARD gauge shows its expected TRUE quality,
+   E[max of n] / sqrt(1 + sigma^2), which equals the table's numbers at sigma = 0. */
+var bonApi = {};
 SceneKit.mount({
   canvas: 'scene3d',
   fit: { w: 16.6, h: 7.0 },
   lift: 0.5,
   warmup: 0,
+  controls: [
+    { id: 'n', type: 'seg', label: 'n', value: 'auto', options: [{ v: 'auto', t: 'Auto' }, { v: '1', t: '1' }, { v: '4', t: '4' }, { v: '16', t: '16' }, { v: '64', t: '64' }],
+      onChange: function (v) { if (bonApi.pickN) bonApi.pickN(v); } },
+    { id: 'sigma', type: 'range', label: 'grader noise', min: 0, max: 2, step: 0.05, value: 0, fmt: function (v) { return v.toFixed(2); } },
+    { type: 'button', label: 'Resample', onClick: function () { if (bonApi.resample) bonApi.resample(); } }
+  ],
   build: function (k) {
     var THREE = k.THREE, g = k.g, P = k.P, ease = k.ease;
 
@@ -62,7 +72,14 @@ SceneKit.mount({
       grp.add(new THREE.Mesh(barGeo, mat));
       grp.add(k.edges(barGeo, 'ink'));
       grp.visible = false; g.add(grp);
-      bars.push({ grp: grp, mat: mat, r: 0, h: 0, x: 0, w: 0 });
+      bars.push({ grp: grp, mat: mat, th: 0, e: 0, s: 0, ht: 0, r: 0, h: 0, x: 0, w: 0 });
+    }
+
+    /* true-quality ticks: a thin dark bar across each answer, shown once the grader is noisy */
+    var tickGeo = new THREE.PlaneGeometry(1, 1), ticks = [];
+    for (i = 0; i < 64; i++) {
+      var tk = new THREE.Mesh(tickGeo, k.fixed(k.basic(), 'ink'));
+      tk.visible = false; g.add(tk); ticks.push(tk);
     }
 
     /* crown over the winner */
@@ -115,35 +132,55 @@ SceneKit.mount({
     function show() {
       for (var q = 0; q < 4; q++) nTag[q].sprite.visible = rTag[q].sprite.visible = kTag[q].sprite.visible = (q === idx);
     }
-    var win = 0;
+    var win = 0, st = k.state, rand2 = rng(11), lastSig = -1;
+    function sig() { return st.sigma || 0; }
+    function norm() { return Math.sqrt(1 + sig() * sig()); }
+    function rescore() {
+      var n = NS[idx], j, b, nm = norm(), sg = sig();
+      win = 0;
+      for (j = 0; j < n; j++) {
+        b = bars[j];
+        b.s = b.th + sg * b.e;
+        b.h = Math.max(0.12, 1.4 + 0.72 * b.s / nm);
+        b.ht = Math.max(0.05, 1.4 + 0.72 * b.th / nm);
+        if (b.s > bars[win].s) win = j;
+      }
+      for (j = 0; j < 4; j++) setTag(rTag[j], '+' + (REWARD[j] / nm).toFixed(2));
+    }
     function deal() {
       var n = NS[idx], w = SPREAD[idx], j;
-      win = 0;
       for (j = 0; j < 64; j++) {
         var b = bars[j];
         if (j < n) {
-          b.r = gauss(rand);
-          b.h = Math.max(0.12, 1.4 + 0.72 * b.r);
+          b.th = gauss(rand); b.e = gauss(rand2);
           b.w = Math.min(0.7, 0.72 * w / n);
           b.x = CX - w / 2 + (j + 0.5) * w / n;
-          if (b.r > bars[win].r) win = j;
         }
         b.grp.visible = j < n;
+        ticks[j].visible = false;
       }
+      rescore();
     }
+    function setTag(t, text) { if (t.text !== text) { t.text = text; drawTag(t); } }
     deal(); show();
 
-    function step(dt) {
-      t += dt;
-      if (t >= T_END) { t = 0; idx = (idx + 1) % 4; deal(); show(); }
-      var n = NS[idx], j, b, grow, wb = bars[win];
+    bonApi.pickN = function (v) { if (v !== 'auto') idx = NS.indexOf(parseInt(v, 10)); t = 0; deal(); show(); layout(0); };
+    bonApi.resample = function () { t = 0; deal(); show(); layout(0); };
+
+    function layout(dt) {
+      var n = NS[idx], j, b, grow, wb = bars[win], sg = sig(), nm = norm();
       var shrink = t > T_HOLD ? 1 - ease((t - T_HOLD) / (T_END - T_HOLD)) : 1;
       for (j = 0; j < n; j++) {
         b = bars[j];
         grow = ease((t - (n > 1 ? 0.55 * j / (n - 1) : 0)) / (T_GROW - 0.3));
         b.grp.position.set(b.x, BASE, 0);
         b.grp.scale.set(b.w, Math.max(0.001, b.h * grow * shrink), 1);
+        var tk = ticks[j];
+        tk.visible = sg > 0.01 && grow > 0.05;
+        tk.position.set(b.x, BASE + b.ht * grow * shrink, 0.25);
+        tk.scale.set(b.w * 1.12, 0.07, 1);
       }
+      for (j = n; j < 64; j++) ticks[j].visible = false;
       var drop = ease((t - T_PICK) / 0.35);
       crown.visible = level.visible = t >= T_PICK && shrink > 0.02;
       crown.position.set(wb.x, BASE + wb.h * shrink + 0.12 + (1 - drop) * 0.9 + 0.03 * Math.sin(t * 6), 0.2);
@@ -151,13 +188,21 @@ SceneKit.mount({
       level.position.set(0, BASE + wb.h * shrink, 0.1);
       level.material.opacity = 0.9 * drop * shrink;
       if (t > T_PICK + 0.2) {
-        gr += (REWARD[idx] / 2.6 - gr) * Math.min(1, dt * 4.5);
+        gr += (REWARD[idx] / nm / 2.6 - gr) * Math.min(1, dt * 4.5);
         gk += (KL[idx] / 3.4 - gk) * Math.min(1, dt * 4.5);
       }
       gR.scale.x = Math.max(0.001, gr * GW); gK.scale.x = Math.max(0.001, gk * GW);
     }
 
+    function step(dt) {
+      t += dt;
+      if (t >= T_END) { t = 0; if (st.n === 'auto') idx = (idx + 1) % 4; deal(); show(); }
+      if (sig() !== lastSig) { lastSig = sig(); rescore(); }
+      layout(dt);
+    }
+
     function paint() {
+      if (sig() !== lastSig) { lastSig = sig(); rescore(); layout(0); }
       var n = NS[idx], j;
       for (j = 0; j < n; j++) bars[j].mat.color.copy(j === win && t > T_PICK ? P.signal : P.paper2);
       crownMat.color.copy(P.amber);

@@ -1,18 +1,32 @@
 /* Speculative decoding, round by round: a small draft model proposes γ = 4 tokens, the big target
    model checks them in one pass; each token survives with probability α = 0.85, the first rejection
    is replaced by a draw from the residual, and a clean sweep earns a free bonus token.
-   The running mean of tokens per round converges to E[τ] = (1 − α^(γ+1)) / (1 − α) ≈ 3.71. */
+   The running mean of tokens per round converges to E[τ] = (1 − α^(γ+1)) / (1 − α) ≈ 3.71 (at γ = 4, α = 0.85).
+   Guidable: the γ and α sliders change the draft length and the agreement between p and q; the left-hand bars
+   are p = q + t·(p₀ − q) with t = (1 − α)/0.15, so their shared (teal) part always sums to α. */
 (function () {
   'use strict';
   if (!window.SceneKit) return;
+  var api = null;
   SceneKit.mount({
     canvas: 'scene3d', fit: { w: 16.6, h: 6.3 }, warmup: 260,
+    controls: [
+      { id: 'gamma', type: 'range', label: 'γ', min: 1, max: 7, step: 1, value: 4, fmt: function (v) { return v; }, onChange: function () { if (api) api.restart(); } },
+      { id: 'alpha', type: 'range', label: 'α', min: 0.7, max: 0.99, step: 0.01, value: 0.85, fmt: function (v) { return v.toFixed(2); }, onChange: function () { if (api) api.restart(); } }
+    ],
     build: function (k) {
       var T = k.THREE, g = k.g, P = k.P, ease = k.ease, v3 = k.v3, i, j;
-      var GAMMA = 4, ALPHA = 0.85, PERIOD = 5.4, PASS = 1.7, VT = 2.6, EMIT = 4.0, Y = 1.15;
-      var EXPECT = (1 - Math.pow(ALPHA, GAMMA + 1)) / (1 - ALPHA);
+      var MAXG = 7, Y = 1.15, GAMMA = 4, ALPHA = 0.85, PERIOD, PASS, VT, EMIT, EXPECT, SP;
       function clamp(x) { return Math.max(0, Math.min(1, x)); }
-      function slotX(n) { return -5.0 + n * 1.0; }
+      function slotX(n) { return -5.2 + n * SP; }
+      function params() {
+        GAMMA = Math.round(k.state.gamma); ALPHA = k.state.alpha;
+        EXPECT = (1 - Math.pow(ALPHA, GAMMA + 1)) / (1 - ALPHA);
+        SP = Math.min(1.0, 5.4 / (GAMMA + 1));
+        PASS = 0.25 + 0.28 * GAMMA + 0.25 + 0.08; VT = PASS + 0.9; EMIT = VT + 0.26 * GAMMA + 0.36;
+        PERIOD = EMIT + 0.12 * (GAMMA + 1) + 0.8;
+      }
+      params();
 
       /* ---------- draft model (small) and target model (big) ---------- */
       var draftGeo = new T.BoxGeometry(0.2, 1.0, 0.6), draftMat = k.basic();
@@ -40,13 +54,12 @@
         grp.scale.setScalar(0.001); g.add(grp);
         return { g: grp, pm: pm, u: 0, flash: 0, dim: 0 };
       }
-      var cards = []; for (i = 0; i < GAMMA; i++) cards.push(makeCard());
+      var cards = []; for (i = 0; i < MAXG; i++) cards.push(makeCard());
       var rep = makeCard();
       var ghostPts = [v3(-0.31, Y - 0.42), v3(0.31, Y - 0.42), v3(0.31, Y + 0.42), v3(-0.31, Y + 0.42), v3(-0.31, Y - 0.42)];
-      for (i = 0; i < ghostPts.length; i++) ghostPts[i].x += slotX(GAMMA);
       var ghost = new T.Line(new T.BufferGeometry().setFromPoints(ghostPts),
         k.fixed(new T.LineDashedMaterial({ color: 0xffffff, dashSize: 0.1, gapSize: 0.08, transparent: true, opacity: 0.55 }), 'ink2'));
-      ghost.computeLineDistances(); g.add(ghost);
+      ghost.computeLineDistances(); ghost.position.x = slotX(GAMMA); g.add(ghost);
 
       /* ---------- output stream: the tokens the target actually emits ---------- */
       var trayGeo = new T.BoxGeometry(0.46, 0.46, 0.1), tray = [], trayRoles = ['teal', 'teal', 'amber', 'teal', 'teal', 'teal', 'amber'];
@@ -55,32 +68,38 @@
         tmesh.position.set(4.2 + i * 0.62, Y, 0); g.add(tmesh); tray.push({ mat: tm });
       }
       /* tokens-this-round pips */
-      var pips = []; for (i = 0; i < GAMMA + 1; i++) {
+      var pips = []; for (i = 0; i < MAXG + 1; i++) {
         var pm2 = k.basic(), pmesh = new T.Mesh(trayGeo, pm2); pmesh.add(k.edges(trayGeo, 'ink'));
-        pmesh.position.set(4.2 + i * 0.62, -0.85, 0); g.add(pmesh); pips.push({ mat: pm2 });
+        pmesh.position.set(4.2 + i * 0.52, -0.85, 0); g.add(pmesh); pips.push({ mat: pm2, mesh: pmesh });
       }
 
       /* ---------- overlap of p and q: the acceptance rate is the teal part ---------- */
-      var pv = [0.50, 0.30, 0.15, 0.05], qv = [0.40, 0.40, 0.10, 0.10], SC = 2.0, BASE = -1.9, BW = 0.32;
-      function bar(x, h, role) {
-        if (h <= 0.001) return;
-        var geo = new T.BoxGeometry(BW, h, 0.1); geo.translate(0, h / 2, 0);
+      var p0 = [0.50, 0.30, 0.15, 0.05], qv = [0.40, 0.40, 0.10, 0.10], SC = 2.0, BASE = -1.9, BW = 0.32;
+      function bar(x, role) {
+        var geo = new T.BoxGeometry(BW, 1, 0.1); geo.translate(0, 0.5, 0);
         var m = new T.Mesh(geo, k.fixed(k.basic(), role)); m.add(k.edges(geo, 'ink')); m.position.set(x, BASE, 0); g.add(m); return m;
       }
+      var bars = [];
       for (j = 0; j < 4; j++) {
-        var cx = -7.6 + j * 0.9, ov = Math.min(pv[j], qv[j]) * SC;
-        bar(cx - 0.18, ov, 'teal'); bar(cx + 0.18, ov, 'teal');
-        var up = (pv[j] - qv[j]) * SC, dn = (qv[j] - pv[j]) * SC;
-        if (up > 0) { var b1 = bar(cx - 0.18, up, 'amber'); b1.position.y = BASE + ov; }
-        if (dn > 0) { var b2 = bar(cx + 0.18, dn, 'paper2'); b2.position.y = BASE + ov; }
+        var cx = -7.6 + j * 0.9, pg = p0[j] > qv[j];
+        bars.push({ a: bar(cx - 0.18, 'teal'), b: bar(cx + 0.18, 'teal'), c: bar(pg ? cx - 0.18 : cx + 0.18, pg ? 'amber' : 'paper2') });
       }
+      function setBars() {
+        var tt = (1 - ALPHA) / 0.15;
+        for (j = 0; j < 4; j++) {
+          var pj = qv[j] + tt * (p0[j] - qv[j]), ov = Math.min(pj, qv[j]) * SC, ex = Math.abs(pj - qv[j]) * SC, o = bars[j];
+          o.a.scale.y = o.b.scale.y = Math.max(0.0001, ov);
+          o.c.scale.y = Math.max(0.0001, ex); o.c.position.y = BASE + ov;
+        }
+      }
+      setBars();
       var baseLine = new T.Line(new T.BufferGeometry().setFromPoints([v3(-8.0, BASE), v3(-4.5, BASE)]), k.lineMat('ink', 1)); g.add(baseLine);
 
       k.label('DRAFT q', -6.6, Y - 1.05, 2.7);
       k.label('TARGET p', 1.7, Y - 1.55, 3.0);
       k.label('OUTPUT', 5.9, Y - 0.8, 2.6);
       k.label('TOKENS / ROUND', 5.65, -1.5, 3.9);
-      k.label('α = 1 − TV', -6.1, -2.3, 3.2);
+      var alphaLabel = k.label('α = 0.85', -6.1, -2.3, 3.2);
 
       /* ---------- running mean (own sprite, redrawn when a round ends) ---------- */
       var statC = document.createElement('canvas'); statC.width = 512; statC.height = 96;
@@ -120,6 +139,7 @@
           else { var d = ease((t - (VT + 0.26 * nAcc)) / 0.3); c.dim = d; s *= 1 - d; }
           place(c, slotX(i), Y + 0.2 * c.u, s * fade, rz);
         }
+        for (i = GAMMA; i < MAXG; i++) place(cards[i], slotX(i), Y, 0.001, 0);
         var rt = nAcc < GAMMA ? VT + 0.26 * nAcc + 0.3 : VT + 0.26 * GAMMA;
         place(rep, slotX(nAcc), Y + (nAcc === GAMMA ? 0.2 : 0), ease((t - rt) / 0.25) * fade, 0);
         if (t >= PASS && !passSent) { passSent = true; k.send(passCurve, 0.7, function () { slabFlash = 1; }, true); }
@@ -153,6 +173,20 @@
         }
       }
 
+      /* sliders: apply the new γ / α and start a fresh round (the running mean restarts too, since theory changed) */
+      function restart() {
+        params(); setBars(); k.setLabel(alphaLabel, 'α = ' + ALPHA.toFixed(2));
+        ghost.position.x = slotX(GAMMA);
+        rounds = 0; total = 0; drawStat();
+        nAcc = 0; while (nAcc < GAMMA && Math.random() < ALPHA) nAcc++;
+        tau = nAcc + 1; emitted = 0; passSent = false; statDone = false;
+        if (k.reduced) { t = EMIT + 0.12 * tau + 0.1; emitted = tau; passSent = true; statDone = true; rounds = 1; total = tau; drawStat(); }
+        else t = 0;
+        for (i = 0; i < pips.length; i++) pips[i].mesh.scale.setScalar(i <= GAMMA ? 1 : 0.001);
+        step(0);
+      }
+      api = { restart: restart };
+      for (i = 0; i < pips.length; i++) pips[i].mesh.scale.setScalar(i <= GAMMA ? 1 : 0.001);
       drawStat();
       return { step: step, paint: paint, palette: drawStat };
     }

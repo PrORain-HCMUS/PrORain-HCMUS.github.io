@@ -52,11 +52,16 @@
   var SETS = Z.map(timeline);
   var HOLD = 0.3, END_HOLD = 3.0, TO_RAW = 1.1;
 
+  var hooks = {};
   SceneKit.mount({
     canvas: 'scene3d',
     fit: { w: 16.6, h: 6.3 },
     lift: 0.12,
     warmup: 0,
+    controls: [
+      { id: 'seed', type: 'seg', label: 'Matrix', value: 'auto', options: [{ v: 'auto', t: 'Auto' }, { v: '0', t: 'Seed 0' }, { v: '1', t: 'Seed 1' }, { v: '2', t: 'Seed 2' }], onChange: function (v) { if (hooks.seed) hooks.seed(v); } },
+      { id: 'steps', type: 'range', label: 'Steps (pick a seed)', min: 0, max: 6, step: 1, value: 0, fmt: function (v) { return v === 6 ? '60' : String(v); } }
+    ],
     build: function (k) {
       var T = k.THREE, g = k.g, P = k.P, ease = k.ease, i, j;
       var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -131,7 +136,15 @@
         if (phase === 'back') { fi = 0; phase = 'hold'; t = 0; }
       }
 
+      /* picking a seed pins the matrix; the Steps slider then chooses how many Sinkhorn passes it has had (6 = the 60-step limit) */
+      var manualTag = 0;
+      hooks.seed = function (v) {
+        if (v === 'auto') { fi = 0; from = cur.slice(); target = SETS[set][0].M; dur = TO_RAW; tag = 0; t = 0; phase = 'back'; }
+        else set = +v;
+      };
+
       function step(dt) {
+        if (k.state.seed !== 'auto') return;
         t += dt;
         var limit = phase === 'move' || phase === 'back' ? dur : phase === 'hold' ? (fi === 0 ? 1.0 : HOLD) : END_HOLD;
         if (phase === 'move' || phase === 'back') {
@@ -143,7 +156,13 @@
       }
 
       function paint() {
-        var s = sums(cur), n, tg = phase === 'back' ? 0 : tag, bal, v;
+        var manual = k.state.seed !== 'auto', s, n, tg = phase === 'back' ? 0 : tag, bal, v;
+        if (manual) {
+          var fr = SETS[+k.state.seed], idx = k.state.steps >= 6 ? fr.length - 1 : 2 * k.state.steps, tm = fr[idx].M;
+          for (n = 0; n < 16; n++) cur[n] += (tm[n] - cur[n]) * 0.2;
+          shareNow = stationary(cur); manualTag = idx === 0 ? 0 : idx === fr.length - 1 ? 3 : 2; tg = manualTag;
+        }
+        s = sums(cur);
         for (n = 0; n < 16; n++) { v = Math.max(0.02, cur[n] * ZH); cols[n].scale.set(PITCH * 0.78, PITCH * 0.78, v); cols[n].children[0].position.z = 0.5; }
         for (n = 0; n < S; n++) {
           rbars[n].grp.scale.set(Math.max(0.02, s.r[n] * LEN), THICK, 0.14); rbars[n].grp.children[0].position.x = 0.5;
@@ -152,7 +171,8 @@
           cbars[n].mat.color.copy(Math.abs(s.c[n] - 1) < 0.03 ? P.teal : P.ink2);
           bars[n].scale.set(0.7, Math.max(0.02, shareNow[n] * CH), 0.7); bars[n].children[0].position.y = 0.5;
         }
-        bal = (phase === 'end' || (phase === 'move' && tag === 3 && t > dur * 0.6));
+        bal = manual ? (Math.max(Math.abs(s.r[0] - 1), Math.abs(s.r[1] - 1), Math.abs(s.r[2] - 1), Math.abs(s.r[3] - 1), Math.abs(s.c[0] - 1), Math.abs(s.c[1] - 1), Math.abs(s.c[2] - 1), Math.abs(s.c[3] - 1)) < 0.03)
+          : (phase === 'end' || (phase === 'move' && tag === 3 && t > dur * 0.6));
         for (n = 0; n < tags.length; n++) tags[n].sprite.visible = n === tg;
         ends[0].sprite.visible = !bal; ends[1].sprite.visible = bal;
       }

@@ -15,7 +15,15 @@
    Anything made with fixed()/edges()/dashed()/label() recolours itself on light/dark change.
    paint() runs every frame after step() and on every palette change: set per-object colours there
    from k.P so dark mode keeps working. The kit owns the renderer, resize, visibility pause,
-   reduced-motion (static frame after a warm-up), mouse parallax, theme changes and the .has3d class. */
+   reduced-motion (static frame after a warm-up), mouse parallax, drag-to-rotate, theme changes and the .has3d class.
+
+   Guidable scenes: pass controls:[...] to mount() and the kit builds a control strip on the figure
+   (plus Pause/Play and Reset view). Read live values in step()/paint() from k.state[id].
+     { id:'n', type:'range', label:'N', min:1, max:64, step:1, value:16, fmt:function(v){return v;}, onChange:function(v){} }
+     { id:'mode', type:'seg', label:'Mode', options:[{v:'a',t:'A'},{v:'b',t:'B'}], value:'a', onChange:function(v){} }
+     { type:'button', label:'Resample', onClick:function(){} }
+   k.setLabel(l, text) redraws a label made with k.label(); k.label(text,x,y,w,{size:46,role:'ink'}) sets size/colour role.
+   k.reduced is true when the visitor prefers reduced motion. */
 (function () {
   'use strict';
   var instances = {};
@@ -43,7 +51,7 @@
     /* palette */
     var NAMES = { ink: '--ink', ink2: '--ink-2', signal: '--signal', amber: '--amber', paper: '--paper', paper2: '--paper-2', teal: '--teal' };
     var FB = { ink: '#1c1f3a', ink2: '#4a4c63', signal: '#e2502f', amber: '#f0a93a', paper: '#f4efe4', paper2: '#ebe3d2', teal: '#2a7f86' };
-    var P = {}, registry = [], labels = [], movers = [];
+    var P = {}, registry = [], labels = [], movers = [], state = {}, paused = false, view = { yaw: 0, pitch: 0 };
     function readPalette() {
       var cs = getComputedStyle(document.documentElement);
       for (var k in NAMES) {
@@ -55,7 +63,7 @@
     readPalette();
 
     var k = {
-      THREE: THREE, g: g, P: P, camera: camera, colorRoles: ['signal', 'amber', 'teal', 'paper2'],
+      THREE: THREE, g: g, P: P, camera: camera, state: state, reduced: reduce, colorRoles: ['signal', 'amber', 'teal', 'paper2'],
       basic: function () { return new THREE.MeshBasicMaterial({ color: 0xffffff }); },
       fixed: function (mat, role) { registry.push({ mat: mat, role: role }); mat.color.copy(P[role]); return mat; },
       lineMat: function (role, opacity) {
@@ -69,12 +77,14 @@
           k.fixed(new THREE.LineDashedMaterial({ color: 0xffffff, dashSize: 0.14, gapSize: 0.11, transparent: true, opacity: opacity === undefined ? 0.7 : opacity }), role || 'ink2'));
         line.computeLineDistances(); g.add(line); return line;
       },
-      label: function (text, x, y, w) {
+      setLabel: function (l, text) { if (l.text !== text) { l.text = text; drawLabel(l); } },
+      label: function (text, x, y, w, o) {
+        o = o || {};
         var c = document.createElement('canvas'); c.width = 512; c.height = 96;
         var tex = new THREE.CanvasTexture(c); tex.anisotropy = 4;
         var s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
         w = w || 3; s.scale.set(w, w * 96 / 512, 1); s.position.set(x, y, 0.5); g.add(s);
-        var l = { text: text, canvas: c, tex: tex, sprite: s }; labels.push(l); drawLabel(l); return l;
+        var l = { text: text, canvas: c, tex: tex, sprite: s, size: o.size || 46, role: o.role || 'ink' }; labels.push(l); drawLabel(l); return l;
       },
       send: function (curve, dur, done, big) {
         var d = new THREE.Mesh(new THREE.SphereGeometry(0.13, 16, 12), k.fixed(k.basic(), 'signal'));
@@ -89,17 +99,79 @@
     function drawLabel(l) {
       var c = l.canvas, ctx = c.getContext('2d');
       ctx.clearRect(0, 0, c.width, c.height);
-      ctx.fillStyle = '#' + P.ink.getHexString();
-      ctx.font = '700 46px "Space Grotesk", "Segoe UI", sans-serif';
+      ctx.fillStyle = '#' + P[l.role].getHexString();
+      ctx.font = '700 ' + l.size + 'px "Space Grotesk", "Segoe UI", sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       if ('letterSpacing' in ctx) ctx.letterSpacing = '4px';
       ctx.fillText(l.text, c.width / 2 + 2, c.height / 2 + 2);
       l.tex.needsUpdate = true;
     }
 
+    (opts.controls || []).forEach(function (c) { if (c.id) state[c.id] = c.value; });
     var sim = opts.build(k) || {};
     var fit = opts.fit || { w: 16.6, h: 6.3 };
     var running = false, clock = 0, mx = 0, my = 0;
+
+    /* ---- control strip: sliders / segmented buttons / buttons + Pause and Reset view ---- */
+    var ctl = document.createElement('div');
+    ctl.className = 'scene-ctl'; ctl.setAttribute('role', 'group'); ctl.setAttribute('aria-label', 'Scene controls');
+    function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
+    (opts.controls || []).forEach(function (c) {
+      var wrap;
+      if (c.type === 'range') {
+        wrap = el('label', 'ctl ctl-range'); wrap.appendChild(el('span', 'ctl-l', c.label));
+        var inp = el('input'); inp.type = 'range'; inp.min = c.min; inp.max = c.max; inp.step = c.step || 1; inp.value = c.value;
+        inp.setAttribute('aria-label', c.label);
+        var out = el('output', 'ctl-o'); var fmt = c.fmt || function (v) { return v; };
+        var apply = function () { state[c.id] = parseFloat(inp.value); out.textContent = fmt(state[c.id]); if (c.onChange) c.onChange(state[c.id]); if (!running || reduce) { paint(); renderOnce(); } };
+        inp.addEventListener('input', apply); out.textContent = fmt(c.value);
+        wrap.appendChild(inp); wrap.appendChild(out);
+      } else if (c.type === 'seg') {
+        wrap = el('div', 'ctl ctl-seg'); wrap.setAttribute('role', 'group'); wrap.setAttribute('aria-label', c.label);
+        wrap.appendChild(el('span', 'ctl-l', c.label));
+        var btns = [];
+        c.options.forEach(function (o) {
+          var b = el('button', '', o.t); b.type = 'button'; b.setAttribute('aria-pressed', String(o.v === c.value));
+          b.addEventListener('click', function () {
+            state[c.id] = o.v; btns.forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+            if (c.onChange) c.onChange(o.v); if (!running || reduce) { paint(); renderOnce(); }
+          });
+          btns.push(b); wrap.appendChild(b);
+        });
+      } else {
+        wrap = el('div', 'ctl ctl-act'); var bb = el('button', '', c.label); bb.type = 'button';
+        bb.addEventListener('click', function () { if (c.onClick) c.onClick(); if (!running || reduce) { paint(); renderOnce(); } });
+        wrap.appendChild(bb);
+      }
+      ctl.appendChild(wrap);
+    });
+    var sys = el('div', 'ctl ctl-act ctl-sys');
+    var pb = el('button', '', 'Pause'); pb.type = 'button'; pb.setAttribute('aria-pressed', 'false');
+    pb.addEventListener('click', function () { paused = !paused; pb.textContent = paused ? 'Play' : 'Pause'; pb.setAttribute('aria-pressed', String(paused)); if (reduce) { reduce = false; update(); } });
+    var rv = el('button', '', 'Reset view'); rv.type = 'button';
+    rv.addEventListener('click', function () { view.yaw = 0; view.pitch = 0; });
+    sys.appendChild(pb); sys.appendChild(rv); ctl.appendChild(sys);
+    canvas.parentNode.insertBefore(ctl, canvas.nextSibling);
+
+    /* ---- drag to rotate (vertical swipes still scroll the page on touch) ---- */
+    canvas.style.touchAction = 'pan-y'; canvas.style.cursor = 'grab'; canvas.tabIndex = 0;
+    var drag = null;
+    canvas.addEventListener('pointerdown', function (e) { drag = { x: e.clientX, y: e.clientY, yaw: view.yaw, pitch: view.pitch, id: e.pointerId }; canvas.style.cursor = 'grabbing'; try { canvas.setPointerCapture(e.pointerId); } catch (x) {} });
+    canvas.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      view.yaw = Math.max(-1.1, Math.min(1.1, drag.yaw + (e.clientX - drag.x) / 260));
+      view.pitch = Math.max(-0.55, Math.min(0.55, drag.pitch + (e.clientY - drag.y) / 320));
+      if (!running || reduce) { step(0); renderOnce(); }
+    });
+    function endDrag() { drag = null; canvas.style.cursor = 'grab'; }
+    canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
+    canvas.addEventListener('dblclick', function () { view.yaw = 0; view.pitch = 0; });
+    canvas.addEventListener('keydown', function (e) {
+      var d = { ArrowLeft: [-0.12, 0], ArrowRight: [0.12, 0], ArrowUp: [0, -0.1], ArrowDown: [0, 0.1] }[e.key];
+      if (!d) return; e.preventDefault();
+      view.yaw = Math.max(-1.1, Math.min(1.1, view.yaw + d[0])); view.pitch = Math.max(-0.55, Math.min(0.55, view.pitch + d[1]));
+      if (!running || reduce) { step(0); renderOnce(); }
+    });
 
     function resize() {
       var W = Math.max(1, canvas.clientWidth || fig.clientWidth || 1), H = Math.max(1, canvas.clientHeight || fig.clientHeight || 1);
@@ -114,9 +186,18 @@
     function paint() { if (sim.paint) sim.paint(); }
     function renderOnce() { renderer.render(scene, camera); }
     function step(dt) {
-      clock += dt;
       var i, o;
-      if (sim.step) sim.step(dt, clock);
+      if (!paused) {
+        clock += dt;
+        if (sim.step) sim.step(dt, clock);
+        stepMovers(dt);
+      }
+      g.rotation.y += ((Math.sin(clock * 0.3) * 0.05 + mx * 0.14 + view.yaw) - g.rotation.y) * 0.08;
+      g.rotation.x += ((my * 0.1 + view.pitch) - g.rotation.x) * 0.08;
+      paint();
+    }
+    function stepMovers(dt) {
+      var i, o;
       for (i = movers.length - 1; i >= 0; i--) {
         o = movers[i]; o.t += dt / o.dur;
         o.m.position.copy(o.c.getPoint(Math.min(1, o.t)));
@@ -126,9 +207,6 @@
           movers.splice(i, 1); o.done();
         }
       }
-      g.rotation.y += ((Math.sin(clock * 0.3) * 0.05 + mx * 0.14) - g.rotation.y) * 0.05;
-      g.rotation.x += ((my * 0.1) - g.rotation.x) * 0.05;
-      paint();
     }
 
     var onScreen = true, last = performance.now(), raf = 0;
@@ -168,6 +246,7 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { for (var j = 0; j < labels.length; j++) drawLabel(labels[j]); if (!running) renderOnce(); });
 
     for (var n = 0; n < (opts.warmup === undefined ? 200 : opts.warmup); n++) step(1 / 60);
+    if (reduce) { paused = true; pb.textContent = 'Play'; pb.setAttribute('aria-pressed', 'true'); }
     resize();
     if (reduce) renderOnce(); else update();
     fig.classList.add('has3d');

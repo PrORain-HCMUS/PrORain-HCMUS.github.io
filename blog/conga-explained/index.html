@@ -49,7 +49,7 @@
 <li><strong>Positions fall off a cliff.</strong> SASRec learns one position vector per index. Anything beyond the training window is a position the model has never seen — out-of-distribution by construction.</li>
 <li><strong>The window is a hard limit.</strong> Attention costs \(O(L^2)\) in sequence length, so in practice the model reads the latest 200–300 items and throws the rest away. One residual stream also has to carry both "what I watched yesterday" and "what I've always liked".</li>
 </ul>
-<p>The 3D model above shows the shape of the fix. Recent items stay in the attention window. Older ones are not discarded but folded, one at a time, into a small fixed-size <em>memory</em>. The model reads both, and out comes a ranked top-K list.</p>
+<p>The 3D model above shows the shape of the fix. Recent items stay in the attention window. Older ones are not discarded but folded, one at a time, into a small fixed-size <em>memory</em>. The model reads both, and out comes a ranked top-K list. Drag the scene to turn it; the <em>Window</em> slider changes how many recent items attention reads, and switching <em>Memory</em> off shows what happens when old items are simply dropped.</p>
 
 <h2>The idea: three small, targeted changes</h2>
 <p>CONGA (<em>COntinual Neural Gated Architecture</em>) keeps the SASRec skeleton and swaps in three pieces, each aimed at one weakness. Figure 1 is the paper's own overview.</p>
@@ -74,6 +74,11 @@ score(905, 902)  = -8.446152     # same offset 3 -> identical
  [0.07 0.13 0.28 0.52]
  [0.13 0.07 0.52 0.28]]     row sums = col sums = 1</code></pre>
 <p>The number of streams is set by a simple rule on the corpus's mean sequence length: \(M=4\) when it is at least 50, otherwise \(M=2\) — which means four streams on ML-1M only.</p>
+
+<div class="lab" data-lab="conga-explained">
+<div class="lab-h">Try it<span>RoPE and KromHC, live</span></div>
+<div class="lab-b"><p class="lab-note">This block needs JavaScript. It shows two demos of the maths above: RoPE scores that depend only on the offset between two positions, and an exact 4×4 doubly-stochastic matrix built from two numbers.</p></div>
+</div>
 
 <h3>3 · TITANS: a memory that learns while it reads</h3>
 <p>This is the part the 3D scene animates. TITANS (Behrouz et al., 2025) compresses the whole history into one \(d\times d\) matrix \(M_t\) — fixed size however long the history — and updates it online by gradient descent on its own prediction error:</p>
@@ -151,5 +156,5 @@ uv run python main.py --dataset ml-1m --lr 0.001 \
   <div class="next"><span></span><a href="/blog/speculative-decoding/" style="text-align:right"><small>Next →</small>Speculative decoding: the acceptance rate is 1 − TV, so train for TV, not KL</a></div>
 </article></main><footer><div class="wrap"><span>© <span id="year">2026</span> Hoang-Vu Le · Ho Chi Minh City, Viet Nam</span><span><a href="/feed.xml">RSS</a> · <a href="/">Home</a></span></div></footer>
 <script src="/assets/js/site.js" defer></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.querySelector('.prose'),{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script><script defer src="/assets/js/scene-kit.js"></script><script defer src="/assets/js/scenes/conga-explained.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.querySelector('.prose'),{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script><script defer src="/assets/js/scene-kit.js"></script><script defer src="/assets/js/scenes/conga-explained.js"></script><script defer src="/assets/js/labs/conga-explained.js"></script>
 </body></html>

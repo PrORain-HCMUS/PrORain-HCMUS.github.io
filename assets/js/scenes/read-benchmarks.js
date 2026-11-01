@@ -1,15 +1,20 @@
 /* "How to read an LLM benchmark": two models scored 82.1 vs 80.4, with 95% whiskers = 1.96·sqrt(p(1-p)/N), p = 0.8.
    N sweeps 100 → 500 → 14,000 and back. Faint ticks are bootstrap resamples of the test set (spread = SE).
-   The band between the whiskers shows whether the two intervals overlap. Right: the questions being scored. */
+   The band between the whiskers shows whether the two intervals overlap. Right: the questions being scored.
+   Controls: N (Auto sweep, or pinned to 100 / 500 / 14,000) and the gap A - B in points (model B moves). */
 (function () {
   'use strict';
   if (!window.SceneKit) return;
   SceneKit.mount({
     canvas: 'scene3d',
     fit: { w: 16.6, h: 6.3 },
+    controls: [
+      { id: 'n', type: 'seg', label: 'N', value: 'auto', options: [{ v: 'auto', t: 'Auto' }, { v: 100, t: '100' }, { v: 500, t: '500' }, { v: 14000, t: '14,000' }] },
+      { id: 'gap', type: 'range', label: 'Gap', min: 0.5, max: 5, step: 0.1, value: 1.7, fmt: function (v) { return v.toFixed(1) + ' pts'; } }
+    ],
     build: function (k) {
       var T = k.THREE, g = k.g;
-      var P0 = 0.8, SA = 82.1, SB = 80.4;
+      var P0 = 0.8, SA = 82.1, SB0 = 80.4;
       var S_LO = 72, S_HI = 90, Y0 = -2.55, Y1 = 2.55;
       var XA = -5.1, XB = -2.3, XL = -7.5, XR = 0.1;
       function sy(s) { return Y0 + (s - S_LO) / (S_HI - S_LO) * (Y1 - Y0); }
@@ -31,7 +36,7 @@
       line(XL, Y0 - 0.1, XL, Y1 + 0.1, 'ink', 1);
       line(XL, Y0 - 0.1, XR, Y0 - 0.1, 'ink', 1);
       k.dashed(new T.LineCurve3(k.v3(XL, sy(SA), -0.1), k.v3(XR, sy(SA), -0.1)), 'amber', 0.9);
-      k.dashed(new T.LineCurve3(k.v3(XL, sy(SB), -0.1), k.v3(XR, sy(SB), -0.1)), 'teal', 0.9);
+      var bLine = k.dashed(new T.LineCurve3(k.v3(XL, sy(SB0), -0.1), k.v3(XR, sy(SB0), -0.1)), 'teal', 0.9);
 
       /* overlap / gap bands between the two whiskers */
       var overlap = new T.Mesh(new T.PlaneGeometry(1, 1), solid('signal', 0.34)); overlap.position.set((XA + XB) / 2, 0, -0.2); g.add(overlap);
@@ -46,17 +51,17 @@
         stem.position.z = cap1.position.z = cap2.position.z = 0.3;
         stem.position.x = cap1.position.x = cap2.position.x = x;
         g.add(stem); g.add(cap1); g.add(cap2);
-        k.label(name, x, -2.95, 3.0);
+        var nameLbl = k.label(name, x, -2.95, 3.0);
         var ticks = [];
         for (var i = 0; i < 9; i++) {
           var t = box(0.9, 0.05, 0.05, solid('ink2', 0.6)); t.position.set(x + (rnd() - 0.5) * 0.7, sy(score), 0.12); g.add(t);
           ticks.push({ m: t, z: gauss() });
         }
-        var w = { x: x, mean: score, stem: stem, cap1: cap1, cap2: cap2, ticks: ticks, next: 0 };
+        var w = { x: x, mean: score, slab: slab, edge: e, name: nameLbl, stem: stem, cap1: cap1, cap2: cap2, ticks: ticks, next: 0 };
         whiskers.push(w); return w;
       }
-      var A = model(XA, SA, 'amber', 'MODEL A');
-      var B = model(XB, SB, 'teal', 'MODEL B');
+      var A = model(XA, SA, 'amber', 'A · 82.1');
+      var B = model(XB, SB0, 'teal', 'B · 80.4');
 
       /* ---- the test set (right): 11 x 6 questions, correct = teal, wrong = signal, flash = amber ---- */
       var COLS = 11, ROWS = 6, PITCH = 0.55, CX = 5.2, CY = -0.05;
@@ -81,9 +86,11 @@
         var seg = Math.floor(t / SEG), u = t - seg * SEG, a = KEYS[seg], b = KEYS[(seg + 1) % 3];
         return u < HOLD ? a : a + (b - a) * k.ease((u - HOLD) / TR);
       }
-      var tick = 0, lastT = 0;
+      var tick = 0, lastWall = 0, lastClock = 0, lastN = k.state.n;
+      function targetLn(clock) { return k.state.n === 'auto' ? schedule(clock) : Math.log(k.state.n); }
       function step(dt, clock) {
-        lnN = schedule(clock);
+        lastWall = performance.now(); lastClock = clock;
+        lnN += (targetLn(clock) - lnN) * (1 - Math.exp(-dt * 8));
         var f = (lnN - KEYS[0]) / (KEYS[2] - KEYS[0]);
         active = Math.round(14 + f * (COLS * ROWS - 14));
 
@@ -107,6 +114,14 @@
       }
 
       function paint() {
+        // a control changed while the loop is not running (paused, off-screen, reduced motion): jump instead of easing
+        if (k.state.n !== lastN) { lastN = k.state.n; if (performance.now() - lastWall > 250) lnN = targetLn(lastClock); }
+        var SB = SA - k.state.gap;
+        if (Math.abs(B.mean - SB) > 1e-9) {
+          B.mean = SB;
+          B.slab.position.y = sy(SB); B.edge.position.y = sy(SB); bLine.position.y = sy(SB) - sy(SB0);
+          k.setLabel(B.name, 'B · ' + SB.toFixed(1));
+        }
         var half = 1.96 * se(Math.exp(lnN));              // 95% half-width in score points
         var hw = half / (S_HI - S_LO) * (Y1 - Y0);        // in world units
         whiskers.forEach(function (w) {
@@ -115,7 +130,7 @@
           w.cap1.position.y = y + hw; w.cap2.position.y = y - hw;
           w.ticks.forEach(function (t) { t.m.position.y = sy(w.mean + se(Math.exp(lnN)) * t.z); });
         });
-        var aLo = sy(SA - half), bHi = sy(SB + half), over = aLo < bHi;
+        var aLo = sy(SA - half), bHi = sy(B.mean + half), over = aLo < bHi;
         overlap.visible = over; clear.visible = !over;
         if (over) { overlap.scale.set(XB - XA + 1.7, bHi - aLo, 1); overlap.position.y = (aLo + bHi) / 2; }
         else { clear.scale.set(XB - XA + 1.7, aLo - bHi, 1); clear.position.y = (aLo + bHi) / 2; }

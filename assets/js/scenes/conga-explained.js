@@ -1,13 +1,22 @@
 /* CONGA, explained: HISTORY scrolls by, older items fold into a MEMORY bank, a sequence MODEL reads the
-   recent window plus the memory, and a ranked TOP-K list comes out. Uses the shared SceneKit (scene-kit.js). */
+   recent window plus the memory, and a ranked TOP-K list comes out. Uses the shared SceneKit (scene-kit.js).
+   Guidable: a Window slider (how many recent items attention reads), a Memory on/off switch (fold old items
+   into the bank, or simply drop them), and a Next item button. */
+var congaNext = function () {};
 SceneKit.mount({
   canvas: 'scene3d',
   fit: { w: 16.6, h: 6.3 },
+  controls: [
+    { id: 'win', type: 'range', label: 'Window', min: 2, max: 8, step: 1, value: 5, fmt: function (v) { return v + ' items'; } },
+    { id: 'mem', type: 'seg', label: 'Memory', options: [{ v: 'on', t: 'On' }, { v: 'off', t: 'Off' }], value: 'on' },
+    { type: 'button', label: 'Next item', onClick: function () { congaNext(); } }
+  ],
   build: function (k) {
     var THREE = k.THREE, g = k.g, P = k.P, v3 = k.v3, ease = k.ease, i;
 
     /* layout (world units; drawing spans x -8..8, y -2.8..2.8) */
-    var SP = 0.78, X_NEW = 1.24, WINDOW = 5, VISIBLE = 9;
+    var SP = 0.78, X_NEW = 1.24, VISIBLE = 9, st = k.state;
+    function win() { return st.win; }
     var MEM = { x: -7.0, y: 0.1 }, ENC_X = [2.45, 2.85, 3.25];
     var BAR_X = 5.25, THUMB_X = 4.78, BAR_BASE = [1.0, 0.8, 0.62, 0.47, 0.35], BAR_MAX = 2.55;
     var ROLES = k.colorRoles;
@@ -46,8 +55,16 @@ SceneKit.mount({
     }
 
     /* recent-window bracket */
-    var bx0 = X_NEW - (WINDOW - 1) * SP - 0.45, bx1 = X_NEW + 0.45, by = -0.7;
-    g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([v3(bx0, by + 0.12), v3(bx0, by), v3(bx1, by), v3(bx1, by + 0.12)]), k.lineMat('ink', 1)));
+    var bx1 = X_NEW + 0.45, by = -0.7, bracketW = -1;
+    var brGeo = new THREE.BufferGeometry();
+    brGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(12), 3));
+    g.add(new THREE.Line(brGeo, k.lineMat('ink', 1)));
+    function setBracket() {
+      var w = win(); if (w === bracketW) return; bracketW = w;
+      var bx0 = X_NEW - (w - 1) * SP - 0.45, a = brGeo.attributes.position.array;
+      a.set([bx0, by + 0.12, 0, bx0, by, 0, bx1, by, 0, bx1, by + 0.12, 0]); brGeo.attributes.position.needsUpdate = true;
+      winLabel.sprite.position.x = X_NEW - (w - 1) * SP / 2;
+    }
 
     /* sequence model: three slabs */
     var slabGeo = new THREE.BoxGeometry(0.16, 1.9, 1.0), slabs = [], slabRoles = ['paper2', 'amber', 'signal'];
@@ -69,16 +86,16 @@ SceneKit.mount({
 
     /* wires */
     var memArc = new THREE.QuadraticBezierCurve3(v3(MEM.x, MEM.y + 1.05, 0), v3(-2.2, 3.5, 0), v3(ENC_X[0], 0.95, 0));
-    k.dashed(memArc, 'ink2', 0.6);
+    var memWire = k.dashed(memArc, 'ink2', 0.6);
     var inCurve = new THREE.QuadraticBezierCurve3(v3(X_NEW + 0.4, 0, 0.1), v3(2.0, 0.55, 0.2), v3(ENC_X[0] - 0.2, 0, 0));
     var outCurves = bars.map(function (b) {
       var c = new THREE.QuadraticBezierCurve3(v3(ENC_X[2] + 0.15, 0, 0), v3(4.0, b.mesh.position.y * 0.4, 0.2), v3(THUMB_X - 0.3, b.mesh.position.y, 0));
       k.dashed(c, 'ink2', 0.55); return c;
     });
 
-    k.label('MEMORY', MEM.x, -1.5, 2.2);
+    var memLabel = k.label('MEMORY', MEM.x, -1.5, 2.2);
     k.label('HISTORY', -4.1, -1.25, 2.2);
-    k.label('RECENT WINDOW', X_NEW - 1.5 * SP - 0.2, -1.25, 3.2);
+    var winLabel = k.label('RECENT WINDOW', X_NEW - 1.5 * SP - 0.2, -1.25, 3.2);
     k.label('MODEL', 2.85, -1.55, 2.0);
     k.label('TOP-K', 6.35, -2.3, 2.2);
 
@@ -92,7 +109,9 @@ SceneKit.mount({
     var PERIOD = 2.4, HOP = 0.5, ABSORB = 1.0;
     var clock = 0, tt = PERIOD - 0.3, absorbed = true;
 
+    var folded = 0;
     function lightCell() {
+      folded++; k.setLabel(memLabel, 'MEMORY · ' + folded);
       var c = cells[cellIdx % 16]; c.flash = 1; c.fill = Math.min(1, c.fill + 0.5); cellIdx++;
       if (cellIdx % 16 === 0) for (var j = 0; j < 16; j++) cells[j].fill = 0;
     }
@@ -117,21 +136,25 @@ SceneKit.mount({
         })(r);
       }, true);
       for (j = 0; j < bars.length; j++) bars[j].target = 0.18;
-      if (Math.floor(clock / PERIOD) % 2 === 0) k.send(memArc, 1.6, function () { slabs[0].flash = 1; }, false);
+      if (st.mem === 'on' && Math.floor(clock / PERIOD) % 2 === 0) k.send(memArc, 1.6, function () { slabs[0].flash = 1; }, false);
     }
 
+    var memOn = 1;
     function paint() {
       var j, c, b, s, col = new THREE.Color();
+      memOn += ((st.mem === 'on' ? 1 : 0) - memOn) * 0.2;
+      memWire.visible = st.mem === 'on';
+      setBracket();
       for (j = 0; j < cards.length; j++) {
         c = cards[j];
         var aEff = c.from + (c.to - c.from) * ease(tt / HOP);
-        var dim = Math.max(0, Math.min(1, (aEff - (WINDOW - 1.5)) / 1.5));
+        var dim = Math.max(0, Math.min(1, (aEff - (win() - 1.5)) / 1.5));
         col.copy(P[c.role]).lerp(P.paper2, dim * 0.75);
         c.picMat.color.copy(col);
       }
       for (j = 0; j < cells.length; j++) {
         var ce = cells[j];
-        ce.mat.color.copy(P.paper2).lerp(P.amber, ce.fill * 0.85).lerp(P.signal, ce.flash * 0.8);
+        ce.mat.color.copy(P.paper2).lerp(P.amber, ce.fill * 0.85 * memOn).lerp(P.signal, ce.flash * 0.8 * memOn);
         ce.mesh.scale.setScalar(1 + ce.flash * 0.25);
       }
       for (j = 0; j < slabs.length; j++) {
@@ -151,6 +174,11 @@ SceneKit.mount({
       var j, c, h = ease(tt / HOP), e = ease(tt / ABSORB), x, sc;
       for (j = 0; j < cards.length; j++) {
         c = cards[j];
+        if (c.to === 9 && st.mem === 'off') {        // no memory: the oldest item is simply dropped
+          c.g.position.set(X_NEW - (8 + e) * SP, 0, 0); c.g.scale.setScalar(Math.max(0.001, 1 - e)); c.g.rotation.z = 0;
+          if (tt >= ABSORB) c.g.scale.setScalar(0.001);
+          continue;
+        }
         if (c.to === 9) {                            // folding into the memory bank
           var t0 = v3(X_NEW - 8 * SP, 0, 0), tp = cellPos(cellIdx), mid = v3((t0.x + tp.x) / 2, 1.5, 0.3);
           c.g.position.copy(new THREE.QuadraticBezierCurve3(t0, mid, tp).getPoint(e));
@@ -176,15 +204,30 @@ SceneKit.mount({
           arr[s * 3] = nx + (tx - nx) * u; arr[s * 3 + 1] = 0.5 + 4 * u * (1 - u) * hgt * 0.5; arr[s * 3 + 2] = 0.2;
         }
         arc.geo.attributes.position.needsUpdate = true;
-        arc.mat.opacity = (c.to < WINDOW ? 0.95 : 0.5) * (0.7 + 0.3 * Math.sin(clock * 2 + n)) * Math.min(1, c.g.scale.x + 0.2);
+        arc.mat.opacity = (c.to < win() ? 0.95 : (st.mem === 'on' ? 0.5 : 0.12)) * (0.7 + 0.3 * Math.sin(clock * 2 + n)) * Math.min(1, c.g.scale.x + 0.2);
       }
       for (; n < arcs.length; n++) arcs[n].mat.opacity = 0;
     }
 
     tick();   // start mid-cycle so the first frame already shows a full history
 
+    /* Next item: jump to the next cycle. While the scene is paused (no step() calls for a moment) the new
+       state is settled instantly so the button still does something visible. */
+    var lastStep = performance.now();
+    congaNext = function () {
+      var paused = performance.now() - lastStep > 300;
+      tick();
+      if (paused) {
+        tt = ABSORB; placeCards();
+        if (!absorbed) { absorbed = true; if (st.mem === 'on') lightCell(); }
+        for (var r = 0; r < 5; r++) { bars[r].target = BAR_BASE[r] * (0.88 + 0.12 * Math.random()) * BAR_MAX; bars[r].len = bars[r].target; }
+        for (var q = 0; q < 3; q++) slabs[q].flash = 0.6;
+      }
+    };
+
     return {
       step: function (dt) {
+        lastStep = performance.now();
         clock += dt; tt += dt;
         if (tt >= PERIOD) tick();
         var j;
